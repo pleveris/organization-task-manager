@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -75,5 +78,29 @@ class RegisterController extends Controller
         $user->assignRole('user');
 
         return $user;
+    }
+
+    /**
+    * Handle a registration request for the application.
+    *
+    * @param  \Illuminate\Http\Request  $request
+    * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    */
+    public function register(Request $request)
+    {
+        $this->validator($request->all())->validate();
+
+        event(new Registered($user = $this->create($request->all())));
+
+        $this->guard()->login($user);
+
+        $response = $this->registered($request, $user);
+
+        if (! $response) {
+            return redirect()->intended($this->redirectPath());
+        }
+
+        return $request->wantsJson() ? new JsonResponse([], 201)
+                    : redirect($this->redirectPath());
     }
 }

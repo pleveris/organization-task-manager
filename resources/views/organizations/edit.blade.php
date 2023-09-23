@@ -44,7 +44,7 @@
             </form>
         </div>
 
-        <!-- <div class="col-md-4">
+        {{-- <!-- <div class="col-md-4">
             <div class="card">
                 <div class="card-header">Files</div>
                 <div class="card-body">
@@ -78,7 +78,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach($project->getMedia() as $media)
+                        @foreach($organization->getMedia() as $media)
                             <tr>
                                 <th scope="row">{{ $media->file_name }}</th>
                                 <td>{{ $media->human_readable_size }}</td>
@@ -86,7 +86,7 @@
                                     <a class="btn btn-xs btn-info" href="{{ route('media.download', $media) }}">
                                         Download
                                     </a>
-                                    <form action="{{ route('media.delete', ['Project', $project, $media]) }}"
+                                    <form action="{{ route('media.delete', ['Organization', $organization, $media]) }}"
                                           method="POST" onsubmit="return confirm('Are your sure?');"
                                           style="display: inline-block;">
                                         @csrf
@@ -100,6 +100,6 @@
                     </table>
                 </div>
             </div>
-        </div> -->
+        </div> --> --}}
 
 @endsection

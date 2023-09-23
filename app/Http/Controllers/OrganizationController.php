@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\InvitationToOrganization;
 use App\Models\User;
 use App\Models\Organization;
 use Illuminate\Http\Response;
@@ -64,5 +65,89 @@ class OrganizationController extends Controller
         }
 
         return redirect()->route('organizations.index');
+    }
+
+    public function inviteUser(Organization $organization)
+    {
+        $code = md5(uniqid(rand(), true));
+        InvitationToOrganization::create([
+            'organization_id' => $organization->id,
+            'code'            => $code,
+        ]);
+
+        $url = route('organizations.handle-invitation', $code);
+
+        return view('organizations.invite', compact('url'));
+    }
+
+    public function acceptInvitation(string $code)
+    {
+        $invitation = InvitationToOrganization::where('code', $code)->first();
+
+        if(! $invitation) {
+            return redirect()->route('organizations.index')->with('error', 'Sorry, invitation does not exist!');
+        }
+
+        $organization = Organization::find($invitation->organization_id);
+
+        if(! $organization) {
+            return redirect()->route('organizations.index')->with('error', 'Sorry, organization does not exist!');
+        }
+
+        $userId = auth()->user()->id;
+
+        if($organization->create_user_id === $userId) {
+            return redirect()->route('organizations.index')->with('error', 'Sorry, you are a creator of organization, you cannot invite yourself!');
+        }
+
+        User::where('id', $userId)->update([
+            'organization_id' => $organization->id,
+        ]);
+        InvitationToOrganization::where('code', $code)->delete();
+        return redirect()->route('organizations.show', $organization)->with('success', 'Invitation accepted.');
+    }
+
+    public function rejectInvitation(string $code)
+    {
+        $invitation = InvitationToOrganization::where('code', $code)->first();
+
+        if(! $invitation) {
+            return redirect()->route('organizations.index')->with('error', 'Sorry, invitation does not exist!');
+        }
+
+        InvitationToOrganization::where('code', $code)->delete();
+        return redirect()->route('organizations.index')->with('success', 'Invitation rejected.');
+    }
+
+    public function handleInvitation(string $code)
+    {
+        $invitation = InvitationToOrganization::where('code', $code)->first();
+
+        if(! $invitation) {
+            return redirect()->route('organizations.index')->with('error', 'Sorry, invitation does not exist!');
+        }
+
+        $organization = Organization::find($invitation->organization_id);
+
+        if(! $organization) {
+            return redirect()->route('organizations.index')->with('error', 'Sorry, organization does not exist!');
+        }
+
+        $userId = auth()->user()->id;
+
+        if($organization->create_user_id === $userId) {
+            return redirect()->route('organizations.index')->with('error', 'Sorry, you are a creator of organization, you cannot invite yourself!');
+        }
+
+        return view('organizations.handle_invitation', compact('code', 'organization'));
+    }
+
+    public function removeUser(Organization $organization, User $user)
+    {
+        User::where('id', $user->id)->update([
+            'organization_id' => null,
+        ]);
+
+        return redirect()->route('organizations.show', $organization)->with('success', 'User successfullly removed.');
     }
 }

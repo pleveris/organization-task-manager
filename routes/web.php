@@ -26,6 +26,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('user/change-password', [\App\Http\Controllers\UserController::class, 'changePassword'])->name('users.changePassword');
     Route::get('user/ask-change-password', [\App\Http\Controllers\UserController::class, 'askToChangePassword'])->name('users.askToChangePassword');
     Route::resource('organizations', \App\Http\Controllers\OrganizationController::class);
+    Route::get('/organizations/invite/{organization}', [\App\Http\Controllers\OrganizationController::class, 'inviteUser'])->name('organizations.invite');
+    Route::get('/organizations/handle-invitation/{code}', [\App\Http\Controllers\OrganizationController::class, 'handleInvitation'])->name('organizations.handle-invitation');
+    Route::get('/organizations/accept-invitation/{code}', [\App\Http\Controllers\OrganizationController::class, 'acceptInvitation'])->name('organizations.acceptInvitation');
+    Route::get('/organizations/reject-invitation/{code}', [\App\Http\Controllers\OrganizationController::class, 'rejectInvitation'])->name('organizations.rejectInvitation');
+    Route::delete('/organizations/remove-user/{organization}/{user}', [\App\Http\Controllers\OrganizationController::class, 'removeUser'])->name('organizations.removeUser');
+
+
+
+
+
     Route::resource('tasks', \App\Http\Controllers\TaskController::class);
 
     Route::group(['prefix' => 'notifications', 'as' => 'notifications.'], function () {

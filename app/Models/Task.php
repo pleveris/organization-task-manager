@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Filter;
+use App\Traits\HasUserFields;
 //use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
 //use Spatie\MediaLibrary\InteractsWithMedia;
@@ -16,6 +17,7 @@ class Task extends Model
     use HasFactory;
     use SoftDeletes;
     use Filter;
+    use HasUserFields;
 
     protected $fillable = [
         'title',

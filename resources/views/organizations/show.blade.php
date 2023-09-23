@@ -7,6 +7,18 @@
             <div class="card">
                 <div class="card-header">Organization</div>
 
+                @if (session('error'))
+                <div class="alert alert-danger" role="alert">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if (session('success'))
+                <div class="alert alert-success" role="alert">
+                    {{ session('success') }}
+                </div>
+            @endif
+
                 <div class="card-body d-flex justify-content-between">
                     <div>
                         <div class="text-primary">Title: {{ $organization->title }}</div>
@@ -75,6 +87,55 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-12">
+            <div class="card card-accent-primary">
+                <div class="card-header">Users</div>
+
+                <div class="card-body">
+                    @if($organization->users->count())
+                        <table class="table table-sm table-responsive-sm">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                @can('delete')
+                                <th></th>
+                                @endcan
+                            </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($organization->users as $user)
+                                    <tr>
+                                        <td><a href="{{ route('users.show', $user) }}">{{ $user->id }}</a></td>
+                                        <td>{{ $user->getFullNameAttribute() }}</td>
+                                        <td>{{ $user->email }}</td>
+                                        @can('delete')
+                                        <td>
+                                            <form action="{{ route('organizations.removeUser', [$organization, $user]) }}" method="POST"
+                                                      onsubmit="return confirm('Are you sure?');"
+                                                      style="display: inline-block;">
+                                                    <input type="hidden" name="_method" value="DELETE">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                    <input type="submit" class="btn btn-sm btn-danger" value="Delete">
+                                                </form>
+</td>
+@endcan
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <div class="alert alert-info" role="alert">
+                            No users have joined this organization. <a href="{{ route('organizations.invite', $organization) }}">Invite user.</a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+
     </div>
 
 @endsection

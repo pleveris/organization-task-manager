@@ -13,9 +13,15 @@
         <div class="card-header">Organizations list</div>
 
         <div class="card-body">
-            @if (session('status'))
+            @if (session('error'))
                 <div class="alert alert-danger" role="alert">
-                    {{ session('status') }}
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if (session('success'))
+                <div class="alert alert-success" role="alert">
+                    {{ session('success') }}
                 </div>
             @endif
 

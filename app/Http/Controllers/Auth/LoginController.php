@@ -43,7 +43,7 @@ class LoginController extends Controller
         if($request->password == 'password') {
             return redirect(route('users.askToChangePassword'));
         } else {
-            return redirect($this->redirectTo);
+            return redirect()->intended($this->redirectPath()) ?: redirect($this->redirectTo);
         }
     }
 

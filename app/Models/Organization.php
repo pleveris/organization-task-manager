@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Filter;
+use App\Traits\HasUserFields;
 //use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
 //use Spatie\MediaLibrary\InteractsWithMedia;
@@ -15,6 +16,7 @@ class Organization extends Model
     //use HasFactory, SoftDeletes, InteractsWithMedia, Filter;
     use HasFactory;
     use SoftDeletes;
+    use HasUserFields;
 
     protected $fillable = [
         'title',
@@ -23,10 +25,10 @@ class Organization extends Model
 
     //    public const STATUS = ['open', 'in progress', 'blocked', 'cancelled', 'completed'];
 
-    //public function user()
-    //{
-    //return $this->belongsTo(User::class);
-    //}
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
 
     public function tasks()
     {
