@@ -45,6 +45,11 @@ class UserController extends Controller
         return redirect()->route('users.index');
     }
 
+    public function show(User $user)
+    {
+        return view('users.show', compact('user'));
+    }
+
     public function edit(User $user)
     {
         return view('users.edit', compact('user'));
@@ -92,7 +97,7 @@ class UserController extends Controller
 
     public function changePassword(ChangePasswordRequest $request)
     {
-        auth()->user()->update([
+        currentUser()->update([
             'password' => bcrypt($request->new_password),
         ]);
 
