@@ -26,8 +26,8 @@ class UpdateProfileContactRequest extends FormRequest
         return [
             'first_name'   => ['required', 'string', 'max:255'],
             'last_name'    => ['required', 'string', 'max:255'],
-            'address'      => ['required', 'max:255'],
-            'phone_number' => ['required', 'max:255'],
+            'address'      => ['nullable', 'max:255'],
+            'phone_number' => ['nullable', 'max:255'],
         ];
     }
 }

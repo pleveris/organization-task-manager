@@ -16,7 +16,7 @@ class ProfileController extends Controller
     {
         auth()->user()->update($request->validated());
 
-        return redirect()->route('profile.index')->with('status', 'Contacts updated.');
+        return redirect()->route('profile.index')->with('status', 'User information updated.');
     }
 
     public function changePassword(ChangePasswordRequest $request)

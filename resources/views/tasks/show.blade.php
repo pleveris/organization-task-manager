@@ -10,7 +10,6 @@
                 <div class="card-body">
                     <p class="mb-0">{{ $task->user->full_name }}</p>
                     <p class="mb-0">{{ $task->user->email }}</p>
-                    <p class="mb-0">{{ $task->user->phone_number }}</p>
                 </div>
             </div>
         </div>
