@@ -37,8 +37,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="required" for="address">Address</label>
-                    <input class="form-control {{ $errors->has('address') ? 'is-invalid' : '' }}" type="text" name="address" id="address" value="{{ old('address', auth()->user()->address) }}" required>
+                    <label for="address">Address (optional)</label>
+                    <input class="form-control {{ $errors->has('address') ? 'is-invalid' : '' }}" type="text" name="address" id="address" value="{{ old('address', auth()->user()->address) }}">
                     @if($errors->has('address'))
                         <div class="invalid-feedback">
                             {{ $errors->first('address') }}
@@ -48,8 +48,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="required" for="phone_number">Phone number</label>
-                    <input class="form-control {{ $errors->has('phone_number') ? 'is-invalid' : '' }}" type="text" name="phone_number" id="phone_number" value="{{ old('phone_number', auth()->user()->phone_number) }}" required>
+                    <label for="phone_number">Phone number (optional)</label>
+                    <input class="form-control {{ $errors->has('phone_number') ? 'is-invalid' : '' }}" type="text" name="phone_number" id="phone_number" value="{{ old('phone_number', auth()->user()->phone_number) }}">
                     @if($errors->has('phone_number'))
                         <div class="invalid-feedback">
                             {{ $errors->first('phone_number') }}

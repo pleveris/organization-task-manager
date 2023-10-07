@@ -56,10 +56,10 @@ class UserFactory extends Factory
         });
     }
 
-    public function configure()
+    /*public function configure()
     {
         return $this->afterCreating(function (User $user) {
             $user->assignRole('user');
         });
-    }
+    }*/
 }

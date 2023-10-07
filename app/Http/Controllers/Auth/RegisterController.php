@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Providers\RouteServiceProvider;
 use App\Models\User;
+use App\Providers\RouteServiceProvider;
+use App\Repositories\OrganizationRepository;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\JsonResponse;
@@ -75,7 +76,7 @@ class RegisterController extends Controller
             'password'   => Hash::make($data['password']),
         ]);
 
-        $user->assignRole('user');
+        //$user->assignRole('user');
 
         return $user;
     }
@@ -94,6 +95,8 @@ class RegisterController extends Controller
 
         $this->guard()->login($user);
 
+                // User should get a default organization after registration
+                resolve(OrganizationRepository::class)->createDefaultOrganization($user);
         $response = $this->registered($request, $user);
 
         if (! $response) {

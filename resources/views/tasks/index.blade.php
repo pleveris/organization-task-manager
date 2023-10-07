@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-@can('manage tasks')
     <div style="margin-bottom: 10px;" class="row">
         <div class="col-lg-12">
             <a class="btn btn-success" href="{{ route('tasks.create') }}">
@@ -9,7 +8,6 @@
             </a>
         </div>
     </div>
-    @endcan
 
     <div class="card">
         <div class="card-header">Tasks list</div>
@@ -36,7 +34,7 @@
                         </div>
                     </div>
 
-                    <div class="form-group row">
+                    {{-- <!-- <div class="form-group row">
                         <label for="assigned" class="col-form-label">Assigned to:</label>
                         <div class="col-sm-8">
                             <select class="form-control" name="assigned" id="assigned" onchange="this.form.submit()">
@@ -45,7 +43,7 @@
                                         value="{{ auth()->user()->id }}" {{ request('assigned') == auth()->user()->id ? 'selected' : '' }}>Only to me</option>
                             </select>
                         </div>
-                    </div>
+                    </div> --> --}}
 
                 </form>
             </div>
@@ -71,13 +69,11 @@
                             <a class="btn btn-sm btn-info" href="{{ route('tasks.edit', $task) }}">
                                 Edit
                             </a>
-                            @can('delete')
-                                <form action="{{ route('tasks.destroy', $task) }}" method="POST" onsubmit="return confirm('Are you sure?');" style="display: inline-block;">
-                                    <input type="hidden" name="_method" value="DELETE">
-                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                    <input type="submit" class="btn btn-sm btn-danger" value="Delete">
-                                </form>
-                            @endcan
+                            <form action="{{ route('tasks.destroy', $task) }}" method="POST" onsubmit="return confirm('Are you sure?');" style="display: inline-block;">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                <input type="submit" class="btn btn-sm btn-danger" value="Delete">
+                            </form>
                         </td>
                     </tr>
                 @endforeach

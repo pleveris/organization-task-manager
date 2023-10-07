@@ -39,4 +39,9 @@ class Task extends Model
     {
         return $this->belongsTo(Organization::class);
     }
+
+    public function createdByLoggedInUser(): bool
+    {
+        return $this->create_user_id === auth()->user()->id;
+    }
 }

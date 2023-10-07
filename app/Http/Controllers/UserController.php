@@ -40,7 +40,7 @@ class UserController extends Controller
         $data = array_merge($request->validated(), $missingData);
 
         $user = User::create($data);
-        $user->assignRole('user');
+        //$user->assignRole('user');
 
         return redirect()->route('users.index');
     }

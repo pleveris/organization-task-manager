@@ -21,9 +21,8 @@ class Organization extends Model
     protected $fillable = [
         'title',
         'description',
+        'primary',
     ];
-
-    //    public const STATUS = ['open', 'in progress', 'blocked', 'cancelled', 'completed'];
 
     public function users()
     {
@@ -33,5 +32,25 @@ class Organization extends Model
     public function tasks()
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function accessibleToUser(int $userId) {
+        $user = User::find($userId);
+        $created = $this->create_user_id === $userId;
+        $member = $user->organization_id === $this->id;
+
+        if($created && $member) {
+            return true;
+        }
+
+        if($created && ! $member) {
+            return true;
+        }
+
+        if(! $created && $member) {
+            return true;
+        }
+
+        return false;
     }
 }

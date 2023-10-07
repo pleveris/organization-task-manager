@@ -42,14 +42,14 @@
                             <a class="btn btn-sm btn-info" href="{{ route('organizations.edit', $organization) }}">
                                 Edit
                             </a>
-                            @can('delete')
+                            @if(! $organization->primary)
                                 <form action="{{ route('organizations.destroy', $organization) }}" method="POST"
                                       onsubmit="return confirm('Are you sure?');" style="display: inline-block;">
                                     <input type="hidden" name="_method" value="DELETE">
                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                     <input type="submit" class="btn btn-sm btn-danger" value="Delete">
                                 </form>
-                            @endcan
+                                @endif
                         </td>
                     </tr>
                 @endforeach

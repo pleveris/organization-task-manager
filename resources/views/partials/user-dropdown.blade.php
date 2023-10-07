@@ -4,11 +4,11 @@
             @if(auth()->user()->unreadNotifications->count())
                 <span class="badge rounded-pill bg-success">{{ auth()->user()->unreadNotifications->count() }}</span>
             @endif
-            <i class="far fa-bell"></i>
+            <i aria-label="Notifications" class="far fa-bell"></i>
         </a>
     </li>
     <li class="c-header-nav-item dropdown">
-        <a class="c-header-nav-link" data-toggle="dropdown" href="#"
+        <a aria-label="User info" class="c-header-nav-link" data-toggle="dropdown" href="#"
            role="button" aria-haspopup="true" aria-expanded="false">
             <div class="c-avatar">
                 <i class="far fa-user"></i>
