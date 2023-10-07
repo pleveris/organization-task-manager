@@ -65,15 +65,13 @@
                                             <a class="btn btn-sm btn-info" href="{{ route('tasks.edit', $task) }}">
                                                 Edit
                                             </a>
-                                            @can('delete')
-                                                <form action="{{ route('tasks.destroy', $task) }}" method="POST"
-                                                      onsubmit="return confirm('Are you sure?');"
-                                                      style="display: inline-block;">
-                                                    <input type="hidden" name="_method" value="DELETE">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                                    <input type="submit" class="btn btn-sm btn-danger" value="Delete">
-                                                </form>
-                                            @endcan
+                                            <form action="{{ route('tasks.destroy', $task) }}" method="POST"
+                                                onsubmit="return confirm('Are you sure?');"
+                                                style="display: inline-block;">
+                                                <input type="hidden" name="_method" value="DELETE">
+                                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                <input type="submit" class="btn btn-sm btn-danger" value="Delete">
+                                            </form>
                                         </td>
                                     </tr>
                                 @endforeach
