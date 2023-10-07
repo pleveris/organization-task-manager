@@ -8,7 +8,7 @@
     @endif
 
     <div class="card">
-        <div class="card-header">Contact information</div>
+        <div class="card-header">User information</div>
 
         <div class="card-body">
             <form action="{{ route('profile.update') }}" method="POST">
