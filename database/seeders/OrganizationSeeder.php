@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 class OrganizationSeeder extends Seeder
 {
-        /**
+    /**
      * Currently not needed; keeping it here for now, just in case...
      */
     /**

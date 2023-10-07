@@ -33,10 +33,10 @@ class TaskController extends Controller
         }
 
         $tasks = Task::with(['user', 'organization'])
-        ->when($createdIds, function ($query) use($createdIds) {
+        ->when($createdIds, function ($query) use ($createdIds) {
             $query->whereIn('id', $createdIds);
         })
-        ->when($memberIds, function ($query) use($memberIds) {
+        ->when($memberIds, function ($query) use ($memberIds) {
             $query->whereIn('user_id', $memberIds);
         })
         ->filterStatus(request('status'))
@@ -70,13 +70,13 @@ class TaskController extends Controller
             foreach($ids as $id) {
                 $userIds[] = $id;
             }
-                }
+        }
 
-                $organizations = $organizations->pluck('title', 'id');
+        $organizations = $organizations->pluck('title', 'id');
 
-                if(! $userIds) {
-                    return redirect()->back()->with('error', 'You must add at least one person to the organization in order to create a task!');
-                }
+        if(! $userIds) {
+            return redirect()->back()->with('error', 'You must add at least one person to the organization in order to create a task!');
+        }
 
         $users = User::whereIn('id', $userIds)->get()->pluck('full_name', 'id');
 
@@ -87,7 +87,7 @@ class TaskController extends Controller
         return view('tasks.create', compact('users', 'organizations'));
     }
 
-public function store(CreateTaskRequest $request)
+    public function store(CreateTaskRequest $request)
     {
         $task = Task::create($request->validated());
 
@@ -142,13 +142,13 @@ public function store(CreateTaskRequest $request)
             foreach($ids as $id) {
                 $userIds[] = $id;
             }
-                }
+        }
 
-                $organizations = $organizations->pluck('title', 'id');
+        $organizations = $organizations->pluck('title', 'id');
 
-                if(! $userIds) {
-                    return redirect()->back()->with('error', 'There are no users in your organizations!');
-                }
+        if(! $userIds) {
+            return redirect()->back()->with('error', 'There are no users in your organizations!');
+        }
 
         $users = User::whereIn('id', $userIds)->get()->pluck('full_name', 'id');
 

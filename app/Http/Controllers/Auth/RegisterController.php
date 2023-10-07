@@ -95,8 +95,8 @@ class RegisterController extends Controller
 
         $this->guard()->login($user);
 
-                // User should get a default organization after registration
-                resolve(OrganizationRepository::class)->createDefaultOrganization($user);
+        // User should get a default organization after registration
+        resolve(OrganizationRepository::class)->createDefaultOrganization($user);
         $response = $this->registered($request, $user);
 
         if (! $response) {

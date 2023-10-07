@@ -34,7 +34,8 @@ class Organization extends Model
         return $this->hasMany(Task::class);
     }
 
-    public function accessibleToUser(int $userId) {
+    public function accessibleToUser(int $userId)
+    {
         $user = User::find($userId);
         $created = $this->create_user_id === $userId;
         $member = $user->organization_id === $this->id;

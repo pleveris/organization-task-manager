@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 class TaskSeeder extends Seeder
 {
-        /**
+    /**
      * Currently not needed; keeping it here for now, just in case...
      */
     /**
