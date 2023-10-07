@@ -22,7 +22,7 @@ Route::post('email/resend', '\App\Http\Controllers\Auth\VerificationController@r
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-    Route::resource('users', \App\Http\Controllers\UserController::class)->middleware('role:admin');
+    Route::resource('users', \App\Http\Controllers\UserController::class);
     Route::post('user/change-password', [\App\Http\Controllers\UserController::class, 'changePassword'])->name('users.changePassword');
     Route::get('user/ask-change-password', [\App\Http\Controllers\UserController::class, 'askToChangePassword'])->name('users.askToChangePassword');
     Route::resource('organizations', \App\Http\Controllers\OrganizationController::class);
