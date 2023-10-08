@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Notifications\InvitationAccepted;
 use App\Notifications\InvitationRejected;
+use App\Notifications\UserLeftOrganization;
 use App\Models\InvitationToOrganization;
 use App\Models\User;
 use App\Models\Organization;
@@ -94,6 +95,23 @@ class OrganizationController extends Controller
         }
 
         return redirect()->route('organizations.index');
+    }
+
+    public function leave(Organization $organization)
+    {
+        if(! $organization->accessibleToUser(currentUser()->id)) {
+            return redirect()->route('organizations.index')->with('error', 'You are not a member of this organization.');
+        }
+
+        User::where('id', currentUser()->id)->update([
+            'organization_id' => null,
+        ]);
+
+        $notifyUser = User::find($organization->create_user_id);
+        $message = currentUser()->getFullNameAttribute() . ' has left ' . $organization->title . ' organization.';
+        $notifyUser->notify(new UserLeftOrganization(['title' => $message]));
+
+        return redirect()->route('organizations.index')->with('success', 'You have successfully left this organization.');
     }
 
     public function inviteUser(Organization $organization)

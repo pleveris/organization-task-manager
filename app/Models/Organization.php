@@ -54,4 +54,9 @@ class Organization extends Model
 
         return false;
     }
+
+    public function createdByLoggedInUser(): bool
+    {
+        return $this->create_user_id === auth()->user()->id;
+    }
 }
