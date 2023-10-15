@@ -1,5 +1,5 @@
 <ul class="c-header-nav ml-auto mr-4">
-    <li class="c-header-nav-item d-md-down-none mx-2">
+    <li class="c-header-nav-item mx-2">
         <a class="c-header-nav-link" href="{{ route('notifications.index') }}">
             @if(auth()->user()->unreadNotifications->count())
                 <span class="badge rounded-pill bg-success">{{ auth()->user()->unreadNotifications->count() }}</span>
