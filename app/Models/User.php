@@ -31,6 +31,7 @@ class User extends Authenticatable
         'password',
         'address',
         'phone_number',
+        'current_organization_id',
     ];
 
     /**
@@ -56,12 +57,7 @@ class User extends Authenticatable
 
     public function organizations()
     {
-        return $this->hasMany(Organization::class);
-    }
-
-    public function organization()
-    {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsToMany(Organization::class, 'organizations_users');
     }
 
     public function getFullNameAttribute()

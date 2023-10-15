@@ -17,11 +17,25 @@ class TaskController extends Controller
 {
     public function index()
     {
-        $createdIds = Task::where('create_user_id', currentUser()->id)
+        $currentOrganizationId = currentUser()->current_organization_id;
+
+        $createdIds = $currentOrganizationId ? Task::where('create_user_id', currentUser()->id)
+        ->where('organization_id', $currentOrganizationId)
+        ->get()
+        ->pluck('id')
+        ->all()
+        : Task::where('create_user_id', currentUser()->id)
+        ->whereNotNull('organization_id')
         ->get()
         ->pluck('id')
         ->all();
-        $memberIds = Task::where('user_id', currentUser()->id)
+
+        $memberIds = $currentOrganizationId ? Task::where('user_id', currentUser()->id)
+        ->where('organization_id', $currentOrganizationId)
+        ->get()
+        ->pluck('user_id')
+        ->all()
+        : Task::where('user_id', currentUser()->id)
         ->whereNotNull('organization_id')
         ->get()
         ->pluck('user_id')
@@ -48,43 +62,49 @@ class TaskController extends Controller
 
     public function create()
     {
-        $createdIds = Organization::where('create_user_id', currentUser()->id)
-        ->get()
-        ->pluck('id')
-        ->all();
-        $memberIds = User::where('id', currentUser()->id)
-        ->whereNotNull('organization_id')
-        ->get()
-        ->pluck('organization_id')
-        ->all();
-        $organizations = Organization::with('users')
-        ->whereIn('id', array_merge($createdIds, $memberIds))
-        ->get();
+        $currentOrganizationId = currentUser()->current_organization_id;
+        /*$createdIds = Organization::where('create_user_id', currentUser()->id)
+        *->get()
+        *->pluck('id')
+        *->all();
+        *$memberIds = User::where('id', currentUser()->id)
+        *->whereNotNull('organization_id')
+        *->get()
+        *->pluck('organization_id')
+        *->all();
+        *$organizations = Organization::with('users')
+        *->whereIn('id', $memberIds)
+        *->get();
+        *$organizations = Organization::with('users')
+        *->where('id', $currentOrganizationId)
+        *->get();
 
-        $userIds = [];
+        *$userIds = [];
 
-        foreach($organizations as $organization) {
-            $userIds[] = $organization->create_user_id;
-            $ids = $organization->users->pluck('id');
+        *foreach($organizations as $organization) {
+            *$ids = $organization->users->pluck('id');
 
-            foreach($ids as $id) {
-                $userIds[] = $id;
-            }
-        }
+            *foreach($ids as $id) {
+                *$userIds[] = $id;
+            *}
+        *}
 
-        $organizations = $organizations->pluck('title', 'id');
+        *$organizations = $organizations->pluck('title', 'id');
 
-        if(! $userIds) {
-            return redirect()->back()->with('error', 'You must add at least one person to the organization in order to create a task!');
-        }
+        *if(! $userIds) {
+            *return redirect()->back()->with('error', 'You must add at least one person to the organization in order to create a task!');
+        *}
 
-        $users = User::whereIn('id', $userIds)->get()->pluck('full_name', 'id');
+        *$users = User::whereIn('id', $userIds)->get()->pluck('full_name', 'id');
 
-        if($organizations->isEmpty()) {
-            return redirect()->back()->with('error', 'You don\'t have any organizations!');
-        }
+        *if($organizations->isEmpty()) {
+            *return redirect()->back()->with('error', 'You don\'t have any organizations!');
+        *}*/
 
-        return view('tasks.create', compact('users', 'organizations'));
+        $organization = Organization::find($currentOrganizationId);
+        $users = $organization->users->pluck('full_name', 'id');
+
+        return view('tasks.create', compact('users', 'currentOrganizationId'));
     }
 
     public function store(CreateTaskRequest $request)
@@ -120,43 +140,11 @@ class TaskController extends Controller
             return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
         }
 
-        $createdIds = Organization::where('create_user_id', currentUser()->id)
-        ->get()
-        ->pluck('id')
-        ->all();
-        $memberIds = User::where('id', currentUser()->id)
-        ->whereNotNull('organization_id')
-        ->get()
-        ->pluck('organization_id')
-        ->all();
-        $organizations = Organization::with('users')
-        ->whereIn('id', array_merge($createdIds, $memberIds))
-        ->get();
+        $organizationId = $task->organization_id;
+        $organization = Organization::findOrFail($organizationId);
+        $users = $organization->users->pluck('full_name', 'id');
 
-        $userIds = [];
-
-        foreach($organizations as $organization) {
-            $userIds[] = $organization->create_user_id;
-            $ids = $organization->users->pluck('id');
-
-            foreach($ids as $id) {
-                $userIds[] = $id;
-            }
-        }
-
-        $organizations = $organizations->pluck('title', 'id');
-
-        if(! $userIds) {
-            return redirect()->back()->with('error', 'There are no users in your organizations!');
-        }
-
-        $users = User::whereIn('id', $userIds)->get()->pluck('full_name', 'id');
-
-        if($organizations->isEmpty()) {
-            return redirect()->back()->with('error', 'You don\'t have any organizations!');
-        }
-
-        return view('tasks.edit', compact('task', 'users', 'organizations'));
+        return view('tasks.edit', compact('task', 'users', 'organizationId'));
     }
 
     public function update(EditTaskRequest $request, Task $task)

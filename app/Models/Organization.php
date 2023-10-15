@@ -26,7 +26,7 @@ class Organization extends Model
 
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class, 'organizations_users');
     }
 
     public function tasks()
@@ -36,7 +36,11 @@ class Organization extends Model
 
     public function accessibleToUser(int $userId)
     {
-        $user = User::find($userId);
+        return OrganizationUser::where('organization_id', $this->id)
+        ->where('user_id', $userId)
+        ->get()
+        ->isNotEmpty();
+        /*$user = User::find($userId);
         $created = $this->create_user_id === $userId;
         $member = $user->organization_id === $this->id;
 
@@ -52,11 +56,11 @@ class Organization extends Model
             return true;
         }
 
-        return false;
+        return false;*/
     }
 
     public function createdByLoggedInUser(): bool
     {
-        return $this->create_user_id === auth()->user()->id;
+        return $this->create_user_id === currentUser()->id;
     }
 }

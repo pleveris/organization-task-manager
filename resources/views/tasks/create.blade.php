@@ -56,7 +56,7 @@
                     <span class="help-block"> </span>
                 </div>
 
-                <div class="form-group">
+                {{-- <!-- <div class="form-group">
                     <label for="organization_id">Assigned organization</label>
                     <select class="form-control {{ $errors->has('organization_id') ? 'is-invalid' : '' }}" name="organization_id" id="organization_id" required>
                         @foreach($organizations as $id => $entry)
@@ -68,6 +68,11 @@
                             {{ $errors->first('organization_id') }}
                         </div>
                     @endif
+                    <span class="help-block"> </span>
+                </div> --> --}}
+
+                <div class="form-group">
+                    <input class="form-control" type="hidden" name="organization_id" id="organization_id" value="{{ old('organization_id', $currentOrganizationId) }}">
                     <span class="help-block"> </span>
                 </div>
 

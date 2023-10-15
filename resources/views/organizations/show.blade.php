@@ -79,7 +79,8 @@
                         </table>
                     @else
                         <div class="alert alert-info" role="alert">
-                            No tasks added to this organization. <a href="{{ route('tasks.create') }}">Create task now.</a>
+                            No tasks added to this organization.
+                            {{-- <!-- <a href="{{ route('tasks.create') }}">Create task now.</a> --> --}}
                         </div>
                     @endif
                 </div>
@@ -126,9 +127,13 @@
                         </table>
                     @else
                         <div class="alert alert-info" role="alert">
-                            No users have joined this organization. <a href="{{ route('organizations.invite', $organization) }}">Invite user.</a>
+                            There are no users in this organization.
                         </div>
                     @endif
+
+                    <div class="alert alert-info" role="alert">
+                            <a href="{{ route('organizations.invite', $organization) }}">Invite user</a>
+                        </div>
                 </div>
             </div>
         </div>

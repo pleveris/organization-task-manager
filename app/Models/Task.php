@@ -28,7 +28,7 @@ class Task extends Model
         'status'
     ];
 
-    public const STATUS = ['opened', 'in progress', 'pending', 'blocked', 'completed'];
+    public const STATUS = ['open', 'in progress', 'pending', 'blocked', 'completed'];
 
     public function user()
     {
@@ -42,6 +42,6 @@ class Task extends Model
 
     public function createdByLoggedInUser(): bool
     {
-        return $this->create_user_id === auth()->user()->id;
+        return $this->create_user_id === currentUser()->id;
     }
 }

@@ -6,6 +6,7 @@ use App\Notifications\InvitationAccepted;
 use App\Notifications\InvitationRejected;
 use App\Notifications\UserLeftOrganization;
 use App\Models\InvitationToOrganization;
+use App\Models\OrganizationUser;
 use App\Models\User;
 use App\Models\Organization;
 use Illuminate\Http\Response;
@@ -17,20 +18,34 @@ class OrganizationController extends Controller
 {
     public function index()
     {
-        $createdIds = Organization::where('create_user_id', currentUser()->id)
-        ->get()
-        ->pluck('id')
-        ->all();
-        $memberIds = User::where('id', currentUser()->id)
-        ->whereNotNull('organization_id')
-        ->get()
-        ->pluck('organization_id')
-        ->all();
-        $organizations = Organization::with('users')
-        ->whereIn('id', array_merge($createdIds, $memberIds))
+        $currentOrganizationId = currentUser()->current_organization_id;
+        $organizations = User::where('id', currentUser()->id)
+        ->firstOrFail()
+        ->organizations()
         ->paginate(10);
 
-        return view('organizations.index', compact('organizations'));
+        /*$createdIds = Organization::where('create_user_id', currentUser()->id)
+        *->get()
+        *->pluck('id')
+        *->all();
+        *$memberIds = User::where('id', currentUser()->id)
+        *->whereNotNull('organization_id')
+        *->get()
+        *->pluck('organization_id')
+        *->all();
+        *$organizations = Organization::with('users')
+        *->whereIn('id', $memberIds)
+        *->paginate(10);*/
+
+        return view('organizations.index', compact('organizations', 'currentOrganizationId'));
+    }
+
+    public function setCurrentOrganization(Organization $organization)
+    {
+        currentUser()->update([
+            'current_organization_id' => $organization->id,
+        ]);
+        return redirect()->route('organizations.index');
     }
 
     public function create()
@@ -43,6 +58,11 @@ class OrganizationController extends Controller
     public function store(CreateOrganizationRequest $request)
     {
         $organization = Organization::create($request->validated());
+        //User::where('id', currentUser()->id)->update(['organization_id' => $organization->id]);
+        OrganizationUser::create([
+            'organization_id' => $organization->id,
+            'user_id'         => currentUser()->id,
+        ]);
 
         return redirect()->route('organizations.index');
     }
@@ -100,12 +120,19 @@ class OrganizationController extends Controller
     public function leave(Organization $organization)
     {
         if(! $organization->accessibleToUser(currentUser()->id)) {
-            return redirect()->route('organizations.index')->with('error', 'You are not a member of this organization.');
+            return redirect()->route('organizations.index')->with('error', 'You are not a member of this organization!');
         }
 
-        User::where('id', currentUser()->id)->update([
+        if($organization->id === currentUser()->current_organization_id) {
+            return redirect()->route('organizations.index')->with('error', 'You cannot leave your current organization!');
+        }
+
+        /*User::where('id', currentUser()->id)->update([
             'organization_id' => null,
-        ]);
+        ]);*/
+        OrganizationUser::where('user_id', currentUser()->id)
+        ->where('organization_id', $organization->id)
+        ->delete();
 
         $notifyUser = User::find($organization->create_user_id);
         $message = currentUser()->getFullNameAttribute() . ' has left ' . $organization->title . ' organization.';
@@ -145,12 +172,21 @@ class OrganizationController extends Controller
             return redirect()->route('organizations.index')->with('error', 'Sorry, you are a creator of organization, you cannot invite yourself!');
         }
 
-        if(currentUser()->organization_id === $organization->id) {
+        //if(currentUser()->organization_id === $organization->id) {
+        //return redirect()->route('organizations.index')->with('error', 'Sorry, you are already a member of this organization!');
+        //}
+        if(OrganizationUser::where('user_id', currentUser()->id)
+        ->where('organization_id', $organization->id)
+        ->exists()) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, you are already a member of this organization!');
         }
 
-        User::where('id', currentUser()->id)->update([
+        /*User::where('id', currentUser()->id)->update([
             'organization_id' => $organization->id,
+        ]);*/
+        OrganizationUser::create([
+            'organization_id' => $organization->id,
+            'user_id'         => currentUser()->id,
         ]);
 
         $notifyUser = User::find($invitation->create_user_id);
@@ -178,7 +214,12 @@ class OrganizationController extends Controller
             return redirect()->route('organizations.index')->with('error', 'Sorry, you are a creator of organization, you cannot reject this invitation!');
         }
 
-        if(currentUser()->organization_id === $organization->id) {
+        //if(currentUser()->organization_id === $organization->id) {
+        //return redirect()->route('organizations.index')->with('error', 'Sorry, you are already a member of this organization!');
+        //}
+        if(OrganizationUser::where('user_id', currentUser()->id)
+        ->where('organization_id', $organization->id)
+        ->exists()) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, you are already a member of this organization!');
         }
 
@@ -213,9 +254,12 @@ class OrganizationController extends Controller
 
     public function removeUser(Organization $organization, User $user)
     {
-        User::where('id', $user->id)->update([
+        /*User::where('id', $user->id)->update([
             'organization_id' => null,
-        ]);
+        ]);*/
+        OrganizationUser::where('user_id', $user->id)
+        ->where('organization_id', $organization->id)
+        ->delete();
 
         return redirect()->route('organizations.show', $organization)->with('success', 'User successfullly removed.');
     }
