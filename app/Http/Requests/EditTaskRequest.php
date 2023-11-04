@@ -26,7 +26,7 @@ class EditTaskRequest extends FormRequest
         return [
             'title'           => ['required'],
             'description'     => ['required'],
-            'deadline'        => ['required', 'date'],
+            'deadline'        => ['nullable', 'date'],
             'user_id'         => ['required', 'exists:users,id'],
             'organization_id' => ['required', 'exists:organizations,id'],
             'status'          => ['required'],
