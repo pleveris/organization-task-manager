@@ -18,6 +18,15 @@ class OrganizationController extends Controller
 {
     public function index()
     {
+        $organization = Organization::find(request('current'));
+        if($organization) {
+        currentUser()->update([
+            'current_organization_id' => $organization->id,
+            ]);
+
+            return redirect()->back();
+        }
+
         $currentOrganizationId = currentUser()->current_organization_id;
         $organizations = User::where('id', currentUser()->id)
         ->firstOrFail()
@@ -40,13 +49,13 @@ class OrganizationController extends Controller
         return view('organizations.index', compact('organizations', 'currentOrganizationId'));
     }
 
-    public function setCurrentOrganization(Organization $organization)
-    {
-        currentUser()->update([
-            'current_organization_id' => $organization->id,
-        ]);
-        return redirect()->route('organizations.index');
-    }
+    /*public function setCurrentOrganization(Organization $organization)
+    *{
+        *currentUser()->update([
+            *'current_organization_id' => $organization->id,
+        *]);
+        *return redirect()->route('organizations.index');
+    *}*/
 
     public function create()
     {
@@ -104,6 +113,10 @@ class OrganizationController extends Controller
 
         if(! $organization->accessibleToUser(currentUser()->id)) {
             return redirect()->route('organizations.index')->with('error', 'You are not a member of this organization.');
+        }
+
+        if($organization->id === currentUser()->current_organization_id) {
+            return redirect()->route('organizations.index')->with('error', 'You cannot delete your current organization!');
         }
 
         try {

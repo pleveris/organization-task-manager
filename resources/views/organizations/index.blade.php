@@ -39,14 +39,14 @@
                         <td><a href="{{ route('organizations.show', $organization) }}">{{ $organization->title }}</a></td>
                         <td>{{ $organization->description }}</td>
                         <td>
-                        @if($currentOrganizationId !== $organization->id)
+                        {{-- <!-- @if($currentOrganizationId !== $organization->id)
                             <form action="{{ route('organizations.setCurrent', $organization) }}" method="POST"
                                       style="display: inline-block;">
                                     <input type="hidden" name="_method" value="POST">
                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                     <input type="submit" class="btn btn-sm btn-danger" value="Set as current">
                                 </form>
-                            @endif
+                            @endif --> --}}
                             @if($organization->createdByLoggedInUser())
                             <a class="btn btn-sm btn-info" href="{{ route('organizations.edit', $organization) }}">
                                 Edit

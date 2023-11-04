@@ -32,7 +32,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/organizations/reject-invitation/{code}', [\App\Http\Controllers\OrganizationController::class, 'rejectInvitation'])->name('organizations.rejectInvitation');
     Route::delete('/organizations/remove-user/{organization}/{user}', [\App\Http\Controllers\OrganizationController::class, 'removeUser'])->name('organizations.removeUser');
     Route::delete('/organizations/leave/{organization}', [\App\Http\Controllers\OrganizationController::class, 'leave'])->name('organizations.leave');
-    Route::post('organizations/set-current/{organization}', [\App\Http\Controllers\OrganizationController::class, 'setCurrentOrganization'])->name('organizations.setCurrent');
+    //Route::post('organizations/set-current/{organization}', [\App\Http\Controllers\OrganizationController::class, 'setCurrentOrganization'])->name('organizations.setCurrent');
 
 
 
