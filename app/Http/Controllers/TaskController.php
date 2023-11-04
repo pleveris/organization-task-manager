@@ -18,41 +18,46 @@ class TaskController extends Controller
     public function index()
     {
         $currentOrganizationId = currentUser()->current_organization_id;
-
-        $createdIds = $currentOrganizationId ? Task::where('create_user_id', currentUser()->id)
-        ->where('organization_id', $currentOrganizationId)
-        ->get()
-        ->pluck('id')
-        ->all()
-        : Task::where('create_user_id', currentUser()->id)
-        ->whereNotNull('organization_id')
-        ->get()
-        ->pluck('id')
-        ->all();
-
-        $memberIds = $currentOrganizationId ? Task::where('user_id', currentUser()->id)
-        ->where('organization_id', $currentOrganizationId)
-        ->get()
-        ->pluck('user_id')
-        ->all()
-        : Task::where('user_id', currentUser()->id)
-        ->whereNotNull('organization_id')
-        ->get()
-        ->pluck('user_id')
-        ->all();
-
-        if(! $createdIds && ! $memberIds) {
-            $tasks = Task::whereNull('id')->paginate(10);
-            return view('tasks.index', compact('tasks'));
+        
+        if(! $currentOrganizationId) {
+            return redirect()->back()->with('error', 'No default organization chosen!');
         }
 
+        /*$createdIds = $currentOrganizationId ? Task::where('create_user_id', currentUser()->id)
+        *->where('organization_id', $currentOrganizationId)
+        *->get()
+        *->pluck('id')
+        *->all()
+        *: Task::where('create_user_id', currentUser()->id)
+        *->whereNotNull('organization_id')
+        *->get()
+        *->pluck('id')
+        *->all();
+
+        *$memberIds = $currentOrganizationId ? Task::where('user_id', currentUser()->id)
+        *->where('organization_id', $currentOrganizationId)
+        *->get()
+        *->pluck('user_id')
+        *->all()
+        *: Task::where('user_id', currentUser()->id)
+        *->whereNotNull('organization_id')
+        *->get()
+        *->pluck('user_id')
+        *->all();
+
+        *if(! $createdIds && ! $memberIds) {
+            *$tasks = Task::whereNull('id')->paginate(10);
+            *return view('tasks.index', compact('tasks'));
+        *}*/
+
         $tasks = Task::with(['user', 'organization'])
-        ->when($createdIds, function ($query) use ($createdIds) {
-            $query->whereIn('id', $createdIds);
-        })
-        ->when($memberIds, function ($query) use ($memberIds) {
-            $query->whereIn('user_id', $memberIds);
-        })
+        ->where('organization_id', $currentOrganizationId)
+        //->when($createdIds, function ($query) use ($createdIds) {
+            //$query->whereIn('id', $createdIds);
+        //})
+        //->when($memberIds, function ($query) use ($memberIds) {
+            //$query->whereIn('user_id', $memberIds);
+        //})
         ->filterStatus(request('status'))
         //->filterAssigned(request('assigned'))
         ->paginate(10);
