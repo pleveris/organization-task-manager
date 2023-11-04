@@ -1,3 +1,13 @@
+@php
+use App\Models\User;
+        $currentOrganizationId = currentUser()->current_organization_id;
+        $organizations = User::where('id', currentUser()->id)
+        ->firstOrFail()
+        ->organizations()
+        ->paginate(10);
+
+@endphp
+
 <!DOCTYPE html>
 
 <html lang="en">
@@ -38,6 +48,24 @@
                 data-class="c-sidebar-lg-show" responsive="true">
             <i class="fas fa-fw fa-bars"></i>
         </button>
+
+        <div class="d-flex justify-content-end">
+                <form action="{{ route('organizations.index') }}" method="GET">
+                    <div class="form-group row">
+                        <label for="current" class="col-form-label">Current organization:</label>
+                        <div class="col-sm-8">
+                            <select class="form-control" name="current" id="current" onchange="this.form.submit()">
+                                @foreach($organizations as $organization)
+                                    <option
+                                        value="{{ $organization->id }}" {{ $currentOrganizationId == $organization->id ? 'selected' : '' }}>{{ ucfirst($organization->title) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
 
         @include('partials.user-dropdown')
     </header>
