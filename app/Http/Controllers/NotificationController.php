@@ -9,9 +9,10 @@ class NotificationController extends Controller
 {
     public function index()
     {
-        $notifications = auth()->user()->unreadNotifications;
+        $allNotifications = auth()->user()->notifications;
+        $unreadNotifications = auth()->user()->unreadNotifications;
 
-        return view('notifications.index', compact('notifications'));
+        return view('notifications.index', compact('allNotifications', 'unreadNotifications'));
     }
 
     public function update(Request $request, DatabaseNotification $notification)
