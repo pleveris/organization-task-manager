@@ -39,6 +39,11 @@ Route::middleware(['auth'])->group(function () {
 
 
     Route::resource('tasks', \App\Http\Controllers\TaskController::class);
+    Route::get('/tasks/invite/{task}', [\App\Http\Controllers\TaskController::class, 'inviteUser'])->name('tasks.invite');
+    Route::get('/tasks/handle-invitation/{code}', [\App\Http\Controllers\TaskController::class, 'handleInvitation'])->name('tasks.handle-invitation');
+    Route::get('/tasks/accept-invitation/{code}', [\App\Http\Controllers\TaskController::class, 'acceptInvitation'])->name('tasks.acceptInvitation');
+    Route::get('/tasks/reject-invitation/{code}', [\App\Http\Controllers\TaskController::class, 'rejectInvitation'])->name('tasks.rejectInvitation');
+
 
     Route::group(['prefix' => 'notifications', 'as' => 'notifications.'], function () {
         Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index'])->name('index');

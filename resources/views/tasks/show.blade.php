@@ -3,6 +3,7 @@
 @section('content')
 
     <div class="row">
+        @if($task->user)
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">Assigned user</div>
@@ -13,6 +14,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <div class="col-md-8">
             <div class="card card-accent-primary">

@@ -25,11 +25,6 @@ class CreateTaskRequest extends FormRequest
     {
         return [
             'title'           => ['required'],
-            'description'     => ['required'],
-            'deadline'        => ['nullable', 'date'],
-            'user_id'         => ['required', 'exists:users,id'],
-            'organization_id' => ['required', 'exists:organizations,id'],
-            'status'          => ['required'],
         ];
     }
 }

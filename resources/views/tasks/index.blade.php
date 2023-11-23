@@ -62,7 +62,7 @@
                 @foreach($tasks as $task)
                     <tr>
                         <td><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></td>
-                        <td>{{ $task->user->first_name }}</td>
+                        <td>{{ $task?->user?->first_name }}</td>
                         <td>{{ $task->deadline }}</td>
                         <td>{{ $task->status }}</td>
                         <td>

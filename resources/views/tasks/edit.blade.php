@@ -8,9 +8,28 @@
                 @method('PUT')
 
                 <div class="card">
-                    <div class="card-header">Edit task</div>
+                    <div class="card-header">{{ $headline }}</div>
 
                     <div class="card-body">
+                        @if($task->parent_id)
+                        <div class="form-group">
+                            <label for="parent_id">Belongs to task:</label>
+                            <select class="form-control {{ $errors->has('parent_id') ? 'is-invalid' : '' }}"
+                                    name="parent_id" id="parent_id">
+                                @foreach($allTasks as $id => $entry)
+                                    <option
+                                        value="{{ $id }}" {{ (old('parent_id') ? old('parent_id') : $task->parent_id ?? '') == $id ? 'selected' : '' }}>{{ $entry }}</option>
+                                @endforeach
+                            </select>
+                            @if($errors->has('parent_id'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('parent_id') }}
+                                </div>
+                            @endif
+                            <span class="help-block"> </span>
+                        </div>
+                        @endif
+
                         <div class="form-group">
                             <label class="required" for="title">Title</label>
                             <input class="form-control {{ $errors->has('title') ? 'is-invalid' : '' }}" type="text"
@@ -24,7 +43,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="required" for="description">Description</label>
+                            <label for="description">Description</label>
                             <textarea class="form-control {{ $errors->has('description') ? 'is-invalid' : '' }}"
                                       rows="10" name="description"
                                       id="description">{{ old('description', $task->description) }}</textarea>
@@ -51,7 +70,7 @@
                         <div class="form-group">
                             <label for="user_id">Assigned user</label>
                             <select class="form-control {{ $errors->has('user_id') ? 'is-invalid' : '' }}"
-                                    name="user_id" id="user_id" required>
+                                    name="user_id" id="user_id">
                                 @foreach($users as $id => $entry)
                                     <option
                                         value="{{ $id }}" {{ (old('user_id') ? old('user_id') : $task->user->id ?? '') == $id ? 'selected' : '' }}>{{ $entry }}</option>
@@ -90,7 +109,7 @@
                         <div class="form-group">
                             <label for="status">Status</label>
                             <select class="form-control {{ $errors->has('status') ? 'is-invalid' : '' }}" name="status"
-                                    id="status" required>
+                                    id="status">
                                 @foreach(App\Models\Task::STATUS as $status)
                                     <option
                                         value="{{ $status }}" {{ (old('status') ? old('status') : $task->status ?? '') == $status ? 'selected' : '' }}>{{ ucfirst($status) }}</option>
@@ -105,7 +124,7 @@
                         </div>
 
                         <button class="btn btn-primary" type="submit">
-                            Save
+                            Send invite
                         </button>
                     </div>
                 </div>

@@ -20,6 +20,7 @@ class Task extends Model
     use HasUserFields;
 
     protected $fillable = [
+        'parent_id',
         'title',
         'description',
         'user_id',
@@ -28,7 +29,8 @@ class Task extends Model
         'status'
     ];
 
-    public const STATUS = ['open', 'in progress', 'pending', 'blocked', 'completed'];
+    //public const STATUS = ['open', 'in progress', 'pending', 'blocked', 'completed'];
+    public const STATUS = ['unsetup', 'logic satisfied', 'logic unsatisfied', 'Logic test'];
 
     public function user()
     {
@@ -43,5 +45,15 @@ class Task extends Model
     public function createdByLoggedInUser(): bool
     {
         return $this->create_user_id === currentUser()->id;
+    }
+
+    public function subtasks()
+    {
+        return $this->hasMany(self::class, 'parent_id');
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(self::class, 'parent_id');
     }
 }
