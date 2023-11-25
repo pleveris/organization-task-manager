@@ -19,7 +19,7 @@
                 </div>
             @endif
 
-            <div class="d-flex justify-content-end">
+            {{-- <!-- <div class="d-flex justify-content-end">
                 <form action="{{ route('tasks.index') }}" method="GET">
                     <div class="form-group row">
                         <label for="status" class="col-form-label">Status:</label>
@@ -43,10 +43,10 @@
                                         value="{{ auth()->user()->id }}" {{ request('assigned') == auth()->user()->id ? 'selected' : '' }}>Only to me</option>
                             </select>
                         </div>
-                    </div> --> --}}
+                    </div>
 
                 </form>
-            </div>
+            </div> --> --}}
 
             <table class="table table-responsive-sm table-striped">
                 <thead>
@@ -61,20 +61,30 @@
                 <tbody>
                 @foreach($tasks as $task)
                     <tr>
+                        @if($task->hidden)
+                        <td>{{ $task->title }}</td>
+                        @else
                         <td><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></td>
+                        @endif
                         <td>{{ $task?->user?->first_name }}</td>
                         <td>{{ $task->deadline }}</td>
-                        <td>{{ $task->status }}</td>
+                        <td>{{ $task?->status }}</td>
                         <td>
+                            @if($task->hidden)
+                            <a class="btn btn-sm btn-info" href="{{ route('tasks.addSubtask', $task) }}">
+                                Add subtask
+                    </a>
+                            @else
                             <a class="btn btn-sm btn-info" href="{{ route('tasks.edit', $task) }}">
                                 Edit
                     </a>
                     @if($task->createdByLoggedInUser())
-                            <form action="{{ route('tasks.destroy', $task) }}" method="POST" onsubmit="return confirm('Are you sure?');" style="display: inline-block;">
+                            <form action="{{ route('tasks.destroy', $task) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this task with all of its subtasks? This action cannot be undone! ?');" style="display: inline-block;">
                                 <input type="hidden" name="_method" value="DELETE">
                                 <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                 <input type="submit" class="btn btn-sm btn-danger" value="Delete">
                             </form>
+                            @endif
                             @endif
                         </td>
                     </tr>

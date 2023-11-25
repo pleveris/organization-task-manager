@@ -26,11 +26,13 @@ class Task extends Model
         'user_id',
         'organization_id',
         'deadline',
-        'status'
+        'status',
+        'logic',
+        'hidden'
     ];
 
     //public const STATUS = ['open', 'in progress', 'pending', 'blocked', 'completed'];
-    public const STATUS = ['unsetup', 'logic satisfied', 'logic unsatisfied', 'Logic test'];
+    //public const STATUS = ['unsetup', 'logic satisfied', 'logic unsatisfied', 'Logic test'];
 
     public function user()
     {

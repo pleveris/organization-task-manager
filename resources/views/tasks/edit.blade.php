@@ -106,7 +106,7 @@
                     <span class="help-block"> </span>
                 </div>
 
-                        <div class="form-group">
+                        {{-- <!-- <div class="form-group">
                             <label for="status">Status</label>
                             <select class="form-control {{ $errors->has('status') ? 'is-invalid' : '' }}" name="status"
                                     id="status">
@@ -121,10 +121,24 @@
                                 </div>
                             @endif
                             <span class="help-block"> </span>
+                        </div>--> --}}
+
+                        <div class="form-group">
+                            <div class="col-md-6 offset-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="logic" id="{{ $task->logic }}"
+                                    @if($task->logic === 1) checked
+                                    @endif >
+
+<label class="form-check-label" for="logic">
+    {{ __('Logic test') }}
+</label>
+</div>
+</div>
                         </div>
 
                         <button class="btn btn-primary" type="submit">
-                            Send invite
+                            Save
                         </button>
                     </div>
                 </div>

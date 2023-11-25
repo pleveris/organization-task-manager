@@ -58,9 +58,9 @@
                                 @foreach($organization->tasks as $task)
                                     <tr>
                                         <td><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></td>
-                                        <td>{{ $task->user->first_name }}</td>
-                                        <td>{{ $task->deadline }}</td>
-                                        <td>{{ $task->status }}</td>
+                                        <td>{{ $task?->user?->first_name }}</td>
+                                        <td>{{ $task?->deadline }}</td>
+                                        <td>{{ $task?->status }}</td>
                                         <td>
                                             <a class="btn btn-sm btn-info" href="{{ route('tasks.edit', $task) }}">
                                                 Edit
@@ -101,9 +101,7 @@
                                 <th>ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
-                                @can('delete')
-                                <th></th>
-                                @endcan
+                                <th>Actions</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -112,7 +110,6 @@
                                         <td><a href="{{ route('users.show', $user) }}">{{ $user->id }}</a></td>
                                         <td>{{ $user->getFullNameAttribute() }}</td>
                                         <td>{{ $user->email }}</td>
-                                        @can('delete')
                                         <td>
                                             <form action="{{ route('organizations.removeUser', [$organization, $user]) }}" method="POST"
                                                       onsubmit="return confirm('Are you sure?');"
@@ -122,7 +119,6 @@
                                                     <input type="submit" class="btn btn-sm btn-danger" value="Delete">
                                                 </form>
 </td>
-@endcan
                                     </tr>
                                 @endforeach
                             </tbody>

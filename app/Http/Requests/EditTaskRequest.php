@@ -31,6 +31,8 @@ class EditTaskRequest extends FormRequest
             'user_id'         => ['nullable', 'exists:users,id'],
             'organization_id' => ['required', 'exists:organizations,id'],
             'status'          => ['nullable'],
+            'logic' => 'nullable',
+            'hidden' => 'nullable',
         ];
     }
 }

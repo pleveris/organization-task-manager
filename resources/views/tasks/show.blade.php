@@ -43,4 +43,53 @@
             </div>
         </div>
 
+        <div class="col-md-12">
+            <div class="card card-accent-primary">
+                <div class="card-header">Subtasks</div>
+
+                <div class="card-body">
+                    @if($task->subtasks->count())
+                        <table class="table table-sm table-responsive-sm">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($task->subtasks as $subtask)
+                                    <tr>
+                                        <td><a href="{{ route('tasks.show', $subtask) }}">{{ $subtask->id }}</a></td>
+                                        <td>{{ $subtask->title }}</td>
+                                        <td>{{ $subtask?->description }}</td>
+                                        <td>
+                                            @if($subtask->createdByLoggedInUser())
+                                            <form action="{{ route('tasks.destroy', $subtask) }}" method="POST"
+                                                      onsubmit="return confirm('Are you sure?');"
+                                                      style="display: inline-block;">
+                                                    <input type="hidden" name="_method" value="DELETE">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                    <input type="submit" class="btn btn-sm btn-danger" value="Delete">
+                                                </form>
+                                                @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <div class="alert alert-info" role="alert">
+                            No subtasks are assigned to this task.
+                        </div>
+                    @endif
+
+                    <div class="alert alert-info" role="alert">
+                            <a href="{{ route('tasks.addSubtask', $task) }}">Add subtask</a>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

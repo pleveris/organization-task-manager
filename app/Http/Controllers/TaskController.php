@@ -65,7 +65,7 @@ class TaskController extends Controller
         //->when($memberIds, function ($query) use ($memberIds) {
             //$query->whereIn('user_id', $memberIds);
         //})
-        ->filterStatus(request('status'))
+        //->filterStatus(request('status'))
         //->filterAssigned(request('assigned'))
         ->paginate(10);
 
@@ -121,13 +121,13 @@ class TaskController extends Controller
         return view('tasks.create', compact('users', 'currentOrganizationId', 'parentId', 'headline'));
     }
 
-    public function createSubtask(Request $request)
+    public function createSubtask(Task $task)
     {
         $currentOrganizationId = currentUser()->current_organization_id;
         $organization = Organization::find($currentOrganizationId);
         $users = $organization->users->pluck('full_name', 'id');
-        $parentId = $request->input('parent_id') ?? null;
-        $headline = 'Add subtask';
+        $parentId = $task->id ?? null;
+        $headline = 'Add subtask to: ' . $task->title;
 
         return view('tasks.create', compact('users', 'currentOrganizationId', 'parentId', 'headline'));
     }
@@ -139,6 +139,15 @@ class TaskController extends Controller
         $data['status'] = 'unsetup';
         $data['organization_id'] = currentUser()->current_organization_id;
         $task = Task::create($data);
+
+        if($request->has('parent_id')) {
+            $parentTask = Task::find($request->input('parent_id'));
+
+            if($parentTask) {
+                $parentTask->update(['hidden' => 0]);
+            }
+            }
+
         return redirect()->route('tasks.index')->with('success', 'Task created successfully');
     }
 
@@ -151,9 +160,7 @@ class TaskController extends Controller
 
         $task->load('user');
 
-        if (! $task->parent_id) {
-            $task->load('subtasks');
-        }
+        $task->load('subtasks');
 
         return view('tasks.show', compact('task'));
     }
@@ -163,6 +170,10 @@ class TaskController extends Controller
         if(! $task->create_user_id === currentUser()->id
         || ! $task->user_id === currentUser()->id) {
             return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
+        }
+
+        if($task->hidden) {
+            return redirect()->route('tasks.addSubtask', $task);
         }
 
         $organizationId = $task->organization_id;
@@ -217,9 +228,21 @@ class TaskController extends Controller
 
         $data = $request->validated();
         $data['user_id'] = null;
+        $data['hidden'] = 0;
+        $data['logic'] = 0;
+
+        if($request->has('logic')) {
+            $data['logic'] = 1;
+        }
+
         $task->update($data);
 
-        return redirect()->route('tasks.show', $task)->with('success', 'Invitation sent.');
+        if($task->logic === 1 && $task->subtasks->isEmpty()) {
+            $task->update(['hidden' => 1]);
+            return redirect()->route('tasks.addSubtask', $task);
+        }
+
+        return redirect()->route('tasks.show', $task);
     }
 
     public function destroy(Task $task)
@@ -232,6 +255,9 @@ class TaskController extends Controller
         }
 
         try {
+            foreach($task->subtasks as $subtask) {
+                $subtask->delete();
+            }
             $task->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             if($e->getCode() === '23000') {
