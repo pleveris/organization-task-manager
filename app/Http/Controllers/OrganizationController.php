@@ -22,9 +22,9 @@ class OrganizationController extends Controller
     {
         $organization = Organization::find(request('current'));
         if($organization) {
-        currentUser()->update([
-            'current_organization_id' => $organization->id,
-            ]);
+            currentUser()->update([
+                'current_organization_id' => $organization->id,
+                ]);
 
             return redirect()->back();
         }
@@ -92,8 +92,8 @@ class OrganizationController extends Controller
             $taskStatuses->put(
                 $task->id,
                 resolve(TaskService::class)->getStatus($task)
-                );
-            }
+            );
+        }
 
         return view('organizations.show', compact('organization', 'taskStatuses'));
     }

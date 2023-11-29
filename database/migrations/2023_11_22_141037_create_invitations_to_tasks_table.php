@@ -8,7 +8,7 @@ use App\Traits\HasUserFields;
 class CreateInvitationsToTasksTable extends Migration
 {
     use HasUserFields;
-    
+
     /**
      * Run the migrations.
      *

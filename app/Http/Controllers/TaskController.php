@@ -26,7 +26,7 @@ class TaskController extends Controller
     public function index()
     {
         $currentOrganizationId = currentUser()->current_organization_id;
-        
+
         if(! $currentOrganizationId) {
             return redirect()->back()->with('error', 'No default organization chosen!');
         }
@@ -77,8 +77,8 @@ class TaskController extends Controller
             $statuses->put(
                 $task->id,
                 resolve(TaskService::class)->getStatus($task)
-                );
-            }
+            );
+        }
 
         return view('tasks.index', compact('tasks', 'statuses'));
     }
@@ -156,7 +156,7 @@ class TaskController extends Controller
             if($parentTask) {
                 $parentTask->update(['hidden' => 0]);
             }
-            }
+        }
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully');
     }
@@ -194,7 +194,7 @@ class TaskController extends Controller
         $users->forget($task->create_user_id);
 
         //if (! $task->parent_id) {
-            //$task->load('subtasks');
+        //$task->load('subtasks');
         //}
 
         $headline = $task->parent_id ? 'Edit subtask' : 'Edit task';
@@ -220,18 +220,18 @@ class TaskController extends Controller
             $code = md5(uniqid(rand(), true));
             $invitation = InvitationToTask::create([
                 'task_id' => $task->id,
-                'code'            => $code,
+                'code'    => $code,
             ]);
 
             $assignee = $request->user_id ? User::find($request->user_id) : currentUser(); //workaround
-    
+
             if($assignee->id !== currentUser()->id) {
                 //$user->notify(new TaskAssigned($task));
                 //$assignee->notify(new InvitationToTaskSent(['title' => $message]));
-                 Mail::to($assignee)->send(new MailInvitedToTask($task, $invitation));
+                Mail::to($assignee)->send(new MailInvitedToTask($task, $invitation));
             }
-    
-                //$user->notify(new TaskAssigned($task));
+
+            //$user->notify(new TaskAssigned($task));
 
             //Mail::to($user)->send(new MailTaskAssigned($task));
         }
@@ -242,7 +242,7 @@ class TaskController extends Controller
         //$data['logic'] = 0;
 
         //if($request->has('logic')) {
-            //$data['logic'] = 1;
+        //$data['logic'] = 1;
         //}
 
         $task->update($data);
@@ -283,7 +283,7 @@ class TaskController extends Controller
         $code = md5(uniqid(rand(), true));
         InvitationToTask::create([
             'task_id' => $task->id,
-            'code'            => $code,
+            'code'    => $code,
         ]);
 
         $url = route('tasks.handle-invitation', $code);

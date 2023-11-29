@@ -25,7 +25,7 @@ class CreateTaskRequest extends FormRequest
     {
         return [
             'parent_id' => 'nullable',
-            'title'           => ['required'],
+            'title'     => ['required'],
         ];
     }
 }

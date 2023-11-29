@@ -24,15 +24,15 @@ class EditTaskRequest extends FormRequest
     public function rules()
     {
         return [
-            'parent_id' => 'nullable|exists:tasks,id',
+            'parent_id'       => 'nullable|exists:tasks,id',
             'title'           => ['required'],
             'description'     => ['nullable'],
             'deadline'        => ['nullable', 'date'],
             'user_id'         => ['nullable', 'exists:users,id'],
             'organization_id' => ['required', 'exists:organizations,id'],
-            'logic_test'          => ['nullable'],
-            'logic' => 'nullable',
-            'hidden' => 'nullable',
+            'logic_test'      => ['nullable'],
+            'logic'           => 'nullable',
+            'hidden'          => 'nullable',
         ];
     }
 }
