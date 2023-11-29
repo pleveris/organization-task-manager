@@ -10,8 +10,10 @@ use App\Models\User;
 use App\Models\Task;
 use App\Models\Organization;
 use App\Models\InvitationToTask;
+use App\Services\TaskService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\EditTaskRequest;
@@ -58,7 +60,7 @@ class TaskController extends Controller
 
         $tasks = Task::with(['user', 'organization'])
         ->where('organization_id', $currentOrganizationId)
-        //->whereNull('parent_id')
+        ->whereNull('parent_id')
         //->when($createdIds, function ($query) use ($createdIds) {
             //$query->whereIn('id', $createdIds);
         //})
@@ -69,7 +71,16 @@ class TaskController extends Controller
         //->filterAssigned(request('assigned'))
         ->paginate(10);
 
-        return view('tasks.index', compact('tasks'));
+        $statuses = new Collection();
+
+        foreach($tasks as $task) {
+            $statuses->put(
+                $task->id,
+                resolve(TaskService::class)->getStatus($task)
+                );
+            }
+
+        return view('tasks.index', compact('tasks', 'statuses'));
     }
 
     public function create()
@@ -136,7 +147,6 @@ class TaskController extends Controller
     {
         $data = $request->validated();
         $data['user_id'] = null;
-        $data['status'] = 'unsetup';
         $data['organization_id'] = currentUser()->current_organization_id;
         $task = Task::create($data);
 
@@ -162,7 +172,9 @@ class TaskController extends Controller
 
         $task->load('subtasks');
 
-        return view('tasks.show', compact('task'));
+        $status = resolve(TaskService::class)->getStatus($task);
+
+        return view('tasks.show', compact('task', 'status'));
     }
 
     public function edit(Task $task)
@@ -219,28 +231,26 @@ class TaskController extends Controller
                  Mail::to($assignee)->send(new MailInvitedToTask($task, $invitation));
             }
     
-    
-
-            //$user->notify(new TaskAssigned($task));
+                //$user->notify(new TaskAssigned($task));
 
             //Mail::to($user)->send(new MailTaskAssigned($task));
         }
 
         $data = $request->validated();
         $data['user_id'] = null;
-        $data['hidden'] = 0;
-        $data['logic'] = 0;
+        //$data['hidden'] = 0;
+        //$data['logic'] = 0;
 
-        if($request->has('logic')) {
-            $data['logic'] = 1;
-        }
+        //if($request->has('logic')) {
+            //$data['logic'] = 1;
+        //}
 
         $task->update($data);
 
-        if($task->logic === 1 && $task->subtasks->isEmpty()) {
+        /*if($task->logic === 1 && $task->subtasks->isEmpty()) {
             $task->update(['hidden' => 1]);
             return redirect()->route('tasks.addSubtask', $task);
-        }
+        }*/
 
         return redirect()->route('tasks.show', $task);
     }

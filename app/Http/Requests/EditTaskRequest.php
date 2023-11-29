@@ -30,7 +30,7 @@ class EditTaskRequest extends FormRequest
             'deadline'        => ['nullable', 'date'],
             'user_id'         => ['nullable', 'exists:users,id'],
             'organization_id' => ['required', 'exists:organizations,id'],
-            'status'          => ['nullable'],
+            'logic_test'          => ['nullable'],
             'logic' => 'nullable',
             'hidden' => 'nullable',
         ];

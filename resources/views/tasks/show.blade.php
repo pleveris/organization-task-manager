@@ -38,7 +38,7 @@
                 <div class="card-body">
                     <p class="mb-0">Deadline: {{ $task->deadline }}</p>
                 {{-- <!-- <p class="mb-0">Created at {{ $task->created_at->format('M d, Y') }}</p> --> --}}
-                    <p class="mb-0">Status: {{ ucfirst($task->status) }}</p>
+                    <p class="mb-0">Status: {{ ucfirst($status) }}</p>
                 </div>
             </div>
         </div>

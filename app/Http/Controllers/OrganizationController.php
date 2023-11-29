@@ -9,7 +9,9 @@ use App\Models\InvitationToOrganization;
 use App\Models\OrganizationUser;
 use App\Models\User;
 use App\Models\Organization;
+use App\Services\TaskService;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\EditOrganizationRequest;
 use App\Http\Requests\CreateOrganizationRequest;
@@ -84,7 +86,16 @@ class OrganizationController extends Controller
 
         $organization->load('tasks');
 
-        return view('organizations.show', compact('organization'));
+        $taskStatuses = new Collection();
+
+        foreach($organization->tasks as $task) {
+            $taskStatuses->put(
+                $task->id,
+                resolve(TaskService::class)->getStatus($task)
+                );
+            }
+
+        return view('organizations.show', compact('organization', 'taskStatuses'));
     }
 
     public function edit(Organization $organization)

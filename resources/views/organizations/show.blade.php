@@ -60,7 +60,7 @@
                                         <td><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></td>
                                         <td>{{ $task?->user?->first_name }}</td>
                                         <td>{{ $task?->deadline }}</td>
-                                        <td>{{ $task?->status }}</td>
+                                        <td>{{ $taskStatuses->get($task->id) }}</td>
                                         <td>
                                             <a class="btn btn-sm btn-info" href="{{ route('tasks.edit', $task) }}">
                                                 Edit

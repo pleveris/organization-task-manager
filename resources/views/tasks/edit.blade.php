@@ -106,24 +106,24 @@
                     <span class="help-block"> </span>
                 </div>
 
-                        {{-- <!-- <div class="form-group">
-                            <label for="status">Status</label>
-                            <select class="form-control {{ $errors->has('status') ? 'is-invalid' : '' }}" name="status"
-                                    id="status">
-                                @foreach(App\Models\Task::STATUS as $status)
+                        <div class="form-group">
+                            <label for="logic_test">Logic test:</label>
+                            <select class="form-control {{ $errors->has('logic_test') ? 'is-invalid' : '' }}" name="logic_test"
+                                    id="logic_test">
+                                @foreach(App\Models\Task::LOGIC_TESTS as $test)
                                     <option
-                                        value="{{ $status }}" {{ (old('status') ? old('status') : $task->status ?? '') == $status ? 'selected' : '' }}>{{ ucfirst($status) }}</option>
+                                        value="{{ $test }}" {{ (old('logic_test') ? old('logic_test') : $task->logic_test ?? '') == $test ? 'selected' : '' }}>{{ ucfirst($test) }}</option>
                                 @endforeach
                             </select>
-                            @if($errors->has('status'))
+                            @if($errors->has('logic_test'))
                                 <div class="invalid-feedback">
-                                    {{ $errors->first('status') }}
+                                    {{ $errors->first('logic_test') }}
                                 </div>
                             @endif
                             <span class="help-block"> </span>
-                        </div>--> --}}
+                        </div>
 
-                        <div class="form-group">
+                        {{-- <!-- <div class="form-group">
                             <div class="col-md-6 offset-md-4">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="logic" id="{{ $task->logic }}"
@@ -135,7 +135,7 @@
 </label>
 </div>
 </div>
-                        </div>
+                        </div> --> --}}
 
                         <button class="btn btn-primary" type="submit">
                             Save

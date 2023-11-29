@@ -55,7 +55,7 @@
                     <th>Assigned to</th>
                     <th>Deadline</th>
                     <th>Status</th>
-                    <th></th>
+                    <th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -68,7 +68,7 @@
                         @endif
                         <td>{{ $task?->user?->first_name }}</td>
                         <td>{{ $task->deadline }}</td>
-                        <td>{{ $task?->status }}</td>
+                        <td>{{ $statuses->get($task->id) }}</td>
                         <td>
                             @if($task->hidden)
                             <a class="btn btn-sm btn-info" href="{{ route('tasks.addSubtask', $task) }}">
