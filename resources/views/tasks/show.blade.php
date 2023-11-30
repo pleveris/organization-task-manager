@@ -25,6 +25,9 @@
                 </div>
 
                 <div class="card-footer">
+                    @if($task->parent_id)
+                    <p class="mb-0">Belongs to task: {{ $parentTask->title }}</p>
+                    @endif
                     <p class="mb-0">Created: {{ $task->created_at->format('M d, Y H:m') }}</p>
                     <p class="mb-0">Updated: {{ $task->updated_at->format('M d, Y H:m') }}</p>
                 </div>
@@ -36,7 +39,7 @@
                 {{-- <!-- <div class="card-header">Information</div> --> --}}
 
                 <div class="card-body">
-                    <p class="mb-0">Deadline: {{ $task->deadline }}</p>
+                {{-- <!-- <p class="mb-0">Deadline: {{ $task->deadline }}</p> --> --}}
                 {{-- <!-- <p class="mb-0">Created at {{ $task->created_at->format('M d, Y') }}</p> --> --}}
                     <p class="mb-0">Status: {{ ucfirst($status) }}</p>
                 </div>
@@ -52,7 +55,6 @@
                         <table class="table table-sm table-responsive-sm">
                             <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Title</th>
                                 <th>Description</th>
                                 <th>Actions</th>
@@ -61,10 +63,13 @@
                             <tbody>
                                 @foreach($task->subtasks as $subtask)
                                     <tr>
-                                        <td><a href="{{ route('tasks.show', $subtask) }}">{{ $subtask->id }}</a></td>
-                                        <td>{{ $subtask->title }}</td>
+                                        <td><a href="{{ route('tasks.show', $subtask) }}">{{ $subtask->title }}</a></td>
                                         <td>{{ $subtask?->description }}</td>
                                         <td>
+                                            <a class="btn btn-sm btn-info" href="{{ route('tasks.edit', $subtask) }}">
+                                Edit
+                    </a>
+
                                             @if($subtask->createdByLoggedInUser())
                                             <form action="{{ route('tasks.destroy', $subtask) }}" method="POST"
                                                       onsubmit="return confirm('Are you sure?');"

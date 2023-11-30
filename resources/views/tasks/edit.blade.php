@@ -16,9 +16,9 @@
                             <label for="parent_id">Belongs to task:</label>
                             <select class="form-control {{ $errors->has('parent_id') ? 'is-invalid' : '' }}"
                                     name="parent_id" id="parent_id">
-                                @foreach($allTasks as $id => $entry)
+                                @foreach($allTasks as $parentTask)
                                     <option
-                                        value="{{ $id }}" {{ (old('parent_id') ? old('parent_id') : $task->parent_id ?? '') == $id ? 'selected' : '' }}>{{ $entry }}</option>
+                                        value="{{ $parentTask->id }}" {{ (old('parent_id') ? old('parent_id') : $task->parent_id ?? '') == $parentTask->id ? 'selected' : '' }}>{{ $parentTask->title }}</option>
                                 @endforeach
                             </select>
                             @if($errors->has('parent_id'))
@@ -55,7 +55,7 @@
                             <span class="help-block"> </span>
                         </div>
 
-                        <div class="form-group">
+                        {{-- <!-- <div class="form-group">
                             <label for="deadline">Deadline</label>
                             <input class="form-control {{ $errors->has('deadline') ? 'is-invalid' : '' }}" type="date"
                                    name="deadline" id="deadline" value="{{ old('deadline', $task->deadline) }}">
@@ -65,7 +65,7 @@
                                 </div>
                             @endif
                             <span class="help-block"> </span>
-                        </div>
+                        </div> --> --}}
 
                         <div class="form-group">
                             <label for="user_id">Assigned user</label>

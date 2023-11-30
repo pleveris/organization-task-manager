@@ -174,7 +174,13 @@ class TaskController extends Controller
 
         $status = resolve(TaskService::class)->getStatus($task);
 
-        return view('tasks.show', compact('task', 'status'));
+        $parentTask = null;
+
+        if($task->parent_id) {
+            $parentTask = Task::find($task->parent_id);
+        }
+
+        return view('tasks.show', compact('task', 'status', 'parentTask'));
     }
 
     public function edit(Task $task)
@@ -201,7 +207,7 @@ class TaskController extends Controller
         $allTasks = $task->parent_id ?
         Task::with(['user', 'organization'])
         ->where('organization_id', currentUser()->current_organization_id)
-        //->whereNull('parent_id')
+        ->whereNull('parent_id')
         ->paginate(10)
         : [];
 

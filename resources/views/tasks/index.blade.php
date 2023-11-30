@@ -53,7 +53,6 @@
                 <tr>
                     <th>Title</th>
                     <th>Assigned to</th>
-                    <th>Deadline</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -67,7 +66,6 @@
                         <td><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></td>
                         @endif
                         <td>{{ $task?->user?->first_name }}</td>
-                        <td>{{ $task->deadline }}</td>
                         <td>{{ $statuses->get($task->id) }}</td>
                         <td>
                             @if($task->hidden)
