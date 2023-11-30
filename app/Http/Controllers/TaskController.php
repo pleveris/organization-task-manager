@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\LogicTestEnum;
 use App\Notifications\InvitationAccepted;
 use App\Notifications\InvitationRejected;
 use App\Notifications\TaskAssigned;
@@ -211,7 +212,9 @@ class TaskController extends Controller
         ->paginate(10)
         : [];
 
-        return view('tasks.edit', compact('task', 'users', 'organizationId', 'headline', 'allTasks'));
+        $logicTests = LogicTestEnum::cases();
+
+        return view('tasks.edit', compact('task', 'users', 'organizationId', 'headline', 'allTasks', 'logicTests'));
     }
 
     public function update(EditTaskRequest $request, Task $task)

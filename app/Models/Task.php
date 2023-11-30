@@ -31,10 +31,6 @@ class Task extends Model
         'hidden'
     ];
 
-    //public const STATUS = ['open', 'in progress', 'pending', 'blocked', 'completed'];
-    //public const STATUS = ['unsetup', 'logic satisfied', 'logic unsatisfied', 'Logic test'];
-    public const LOGIC_TESTS = ['All subtasks must be completed'];
-
     public function user()
     {
         return $this->belongsTo(User::class);

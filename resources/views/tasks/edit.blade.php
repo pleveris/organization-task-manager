@@ -110,9 +110,9 @@
                             <label for="logic_test">Logic test:</label>
                             <select class="form-control {{ $errors->has('logic_test') ? 'is-invalid' : '' }}" name="logic_test"
                                     id="logic_test">
-                                @foreach(App\Models\Task::LOGIC_TESTS as $test)
+                                @foreach($logicTests as $test)
                                     <option
-                                        value="{{ $test }}" {{ (old('logic_test') ? old('logic_test') : $task->logic_test ?? '') == $test ? 'selected' : '' }}>{{ ucfirst($test) }}</option>
+                                        value="{{ $test->value }}" {{ (old('logic_test') ? old('logic_test') : $task->logic_test ?? '') == $test->value ? 'selected' : '' }}>{{ ucfirst($test->value) }}</option>
                                 @endforeach
                             </select>
                             @if($errors->has('logic_test'))
