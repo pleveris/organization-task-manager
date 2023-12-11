@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Log;
 use App\Traits\Filter;
 use App\Traits\HasUserFields;
 //use Spatie\MediaLibrary\HasMedia;
@@ -28,7 +29,8 @@ class Task extends Model
         'deadline',
         'logic_test',
         'logic',
-        'hidden'
+        'hidden',
+        'expiration_date'
     ];
 
     public function user()
@@ -54,5 +56,15 @@ class Task extends Model
     public function parent()
     {
         return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function logs()
+    {
+        return $this->hasMany(Log::class, 'task_id')->orderBy('id', 'DESC');
+    }
+
+    public function invitations()
+    {
+        return $this->hasMany(InvitationToTask::class, 'task_id');
     }
 }

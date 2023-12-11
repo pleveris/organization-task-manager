@@ -33,6 +33,7 @@ class EditTaskRequest extends FormRequest
             'logic_test'      => ['nullable'],
             'logic'           => 'nullable',
             'hidden'          => 'nullable',
+            'expiration_date' => 'nullable',
         ];
     }
 }

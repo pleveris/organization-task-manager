@@ -42,6 +42,10 @@
                 {{-- <!-- <p class="mb-0">Deadline: {{ $task->deadline }}</p> --> --}}
                 {{-- <!-- <p class="mb-0">Created at {{ $task->created_at->format('M d, Y') }}</p> --> --}}
                     <p class="mb-0">Status: {{ ucfirst($status) }}</p>
+                    <p class="mb-0">Owner: {{ $createdUser->getFullNameAttribute() }}</p>
+                    @if($task->logic_test === \App\Enums\LogicTestEnum::Expiration->value && ! empty($task->expiration_date))
+                    <p class="mb-0">Expiration date: {{ $task->expiration_date }}</p>
+                        @endif
                 </div>
             </div>
         </div>
@@ -96,5 +100,40 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-12">
+            <div class="card card-accent-primary">
+                <div class="card-header">Logs</div>
+
+                <div class="card-body">
+                    @if($task->logs->count())
+                        <table class="table table-sm table-responsive-sm">
+                            <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($task->logs as $log)
+                                    <tr>
+                                        <td> {{ $log->createdUser()->getFullNameAttribute() }}</td>
+                                        <td>{{ $log->message }}</td>
+                                        <td>{{ $log->created_at->format('M d, Y H:i') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <div class="alert alert-info" role="alert">
+                            No logs for this task are available.
+                        </div>
+                    @endif
+
+                </div>
+            </div>
+        </div>
+
     </div>
 @endsection

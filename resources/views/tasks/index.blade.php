@@ -19,6 +19,18 @@
                 </div>
             @endif
 
+            @if (session('error'))
+                <div class="alert alert-danger" role="alert">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if (session('success'))
+                <div class="alert alert-success" role="alert">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             {{-- <!-- <div class="d-flex justify-content-end">
                 <form action="{{ route('tasks.index') }}" method="GET">
                     <div class="form-group row">

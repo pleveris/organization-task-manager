@@ -71,6 +71,8 @@
                             <label for="user_id">Assigned user</label>
                             <select class="form-control {{ $errors->has('user_id') ? 'is-invalid' : '' }}"
                                     name="user_id" id="user_id">
+                                    <option
+                                    value="{{ '' }}" {{ ! $task->user ? 'selected' : ''}}>{{ '' }}</option>
                                 @foreach($users as $id => $entry)
                                     <option
                                         value="{{ $id }}" {{ (old('user_id') ? old('user_id') : $task->user->id ?? '') == $id ? 'selected' : '' }}>{{ $entry }}</option>
@@ -108,8 +110,10 @@
 
                         <div class="form-group">
                             <label for="logic_test">Logic test:</label>
-                            <select class="form-control {{ $errors->has('logic_test') ? 'is-invalid' : '' }}" name="logic_test"
-                                    id="logic_test">
+                            <select class="form-control {{ $errors->has('logic_test') ? 'is-invalid' : '' }}" name="logic_test" id="logic_test"
+                            onchange="var expirationDatePicker = document.getElementById('expiration_date_picker'); var logicTest = document.getElementById('logic_test').value; expirationDatePicker.style.display = logicTest === 'Expiration' ? 'block' : 'none';"> // TODO not nice!
+                                    <option
+                                    value="{{ '' }}" {{ ! $task->logic_test ? 'selected' : ''}}>{{ '' }}</option>
                                 @foreach($logicTests as $test)
                                     <option
                                         value="{{ $test->value }}" {{ (old('logic_test') ? old('logic_test') : $task->logic_test ?? '') == $test->value ? 'selected' : '' }}>{{ ucfirst($test->value) }}</option>
@@ -118,6 +122,19 @@
                             @if($errors->has('logic_test'))
                                 <div class="invalid-feedback">
                                     {{ $errors->first('logic_test') }}
+                                </div>
+                            @endif
+                            <span class="help-block"> </span>
+                        </div>
+
+                        {{-- <!-- @if($task->logic_test === \App\Enums\LogicTestEnum::Expiration->value) --> --}}
+                        <div id="expiration_date_picker" class="form-group" style="display: {{ $task->logic_test === \App\Enums\LogicTestEnum::Expiration->value ? 'block' : 'none' }}">
+                            <label for="expiration_date">Expiration date</label>
+                            <input class="form-control {{ $errors->has('expiration_date') ? 'is-invalid' : '' }}" type="date"
+                                   name="expiration_date" id="expiration_date" value="{{ old('expiration_date', $task->expiration_date) }}">
+                            @if($errors->has('expiration_date'))
+                                <div class="invalid-feedback">
+                                    {{ $errors->first('expiration_date') }}
                                 </div>
                             @endif
                             <span class="help-block"> </span>

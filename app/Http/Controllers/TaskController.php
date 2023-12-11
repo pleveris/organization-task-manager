@@ -7,6 +7,7 @@ use App\Notifications\InvitationAccepted;
 use App\Notifications\InvitationRejected;
 use App\Notifications\TaskAssigned;
 use App\Notifications\InvitationToTaskSent;
+use App\Models\Log;
 use App\Models\User;
 use App\Models\Task;
 use App\Models\Organization;
@@ -151,13 +152,21 @@ class TaskController extends Controller
         $data['organization_id'] = currentUser()->current_organization_id;
         $task = Task::create($data);
 
+        $message = 'Task created.';
+
         if($request->has('parent_id')) {
             $parentTask = Task::find($request->input('parent_id'));
 
             if($parentTask) {
                 $parentTask->update(['hidden' => 0]);
+                $message = 'Subtask created. Parent task: ' . $parentTask->title;
             }
         }
+
+        Log::create([
+            'task_id' => $task->id,
+            'message' => $message,
+        ]);
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully');
     }
@@ -181,7 +190,9 @@ class TaskController extends Controller
             $parentTask = Task::find($task->parent_id);
         }
 
-        return view('tasks.show', compact('task', 'status', 'parentTask'));
+        $createdUser = User::find($task->create_user_id);
+
+        return view('tasks.show', compact('task', 'status', 'parentTask', 'createdUser'));
     }
 
     public function edit(Task $task)
@@ -198,7 +209,6 @@ class TaskController extends Controller
         $organizationId = $task->organization_id;
         $organization = Organization::findOrFail($organizationId);
         $users = $organization->users->pluck('full_name', 'id');
-        $users->forget($task->create_user_id);
 
         //if (! $task->parent_id) {
         //$task->load('subtasks');
@@ -225,6 +235,10 @@ class TaskController extends Controller
         }
 
         if ($task->user_id !== $request->user_id) {
+            if($task->invitations->count() >= 5) {
+                return redirect()->route('tasks.index')->with('error', 'Too many pending invitations to this task.');
+            }
+
             $assignee = User::find($request->user_id) ?: currentUser(); //workaround
             $code = md5(uniqid(rand(), true));
             $invitation = InvitationToTask::create([
@@ -238,6 +252,11 @@ class TaskController extends Controller
                 //$user->notify(new TaskAssigned($task));
                 //$assignee->notify(new InvitationToTaskSent(['title' => $message]));
                 Mail::to($assignee)->send(new MailInvitedToTask($task, $invitation));
+
+                Log::create([
+                    'task_id' => $task->id,
+                    'message' => 'Invitation to task sent to ' . $assignee->getFullNameAttribute(),
+                ]);
             }
 
             //$user->notify(new TaskAssigned($task));
@@ -253,6 +272,31 @@ class TaskController extends Controller
         //if($request->has('logic')) {
         //$data['logic'] = 1;
         //}
+
+        $changedFields = '';
+
+        if($data['title'] != $task->title) {
+            $changedFields .= 'Title: ' . $data['title'] . '.';
+        }
+
+        if($data['description'] != $task->description) {
+            $changedFields .= 'Description: ' . $data['description'] . '.';
+        }
+
+        if($data['user_id'] != $task->user_id) {
+            $changedFields .= 'Assignee: ' . User::find($data['user_id'])->getFullNameAttribute() . '.';
+        }
+
+        if($data['expiration_date'] != $task->expiration_date) {
+            $changedFields .= 'Expiration date: ' . $task->expiration_date . '.';
+        }
+
+        if($changedFields) {
+            Log::create([
+                'task_id' => $task->id,
+                'message' => 'The task ' . $task->title . ' has been updated. ' . $changedFields,
+            ]);
+        }
 
         $task->update($data);
 
@@ -273,11 +317,16 @@ class TaskController extends Controller
             return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
         }
 
+        //$message = '';
+
         try {
             foreach($task->subtasks as $subtask) {
+                //$message .= 'Deleted subtask: ' . $subtask->title . '. ';
                 $subtask->delete();
             }
+            //$message .= 'Deleted task: ' . $task->title . '. ';
             $task->delete();
+
         } catch (\Illuminate\Database\QueryException $e) {
             if($e->getCode() === '23000') {
                 return redirect()->back()->with('status', 'Task belongs to organization. Cannot delete.');
@@ -296,6 +345,11 @@ class TaskController extends Controller
         ]);
 
         $url = route('tasks.handle-invitation', $code);
+
+        Log::create([
+            'task_id' => $task->id,
+            'message' => 'Invitation to the task ' . $task->title . ' has been generated. URL: ' . $url . '. ',
+        ]);
 
         return view('tasks.invite', compact('url'));
     }
@@ -330,6 +384,11 @@ class TaskController extends Controller
         $message = currentUser()->getFullNameAttribute() . ' has accepted the invitation to the task ' . $task->title . '.';
         $notifyUser->notify(new InvitationAccepted(['title' => $message]));
         $invitation->delete();
+
+        Log::create([
+            'task_id' => $task->id,
+            'message' => $message,
+        ]);
         return redirect()->route('tasks.show', $task)->with('success', 'Invitation accepted.');
     }
 
@@ -360,6 +419,11 @@ class TaskController extends Controller
         $notifyUser->notify(new InvitationRejected(['title' => $message]));
 
         $invitation->delete();
+
+        Log::create([
+            'task_id' => $task->id,
+            'message' => $message,
+        ]);
         return redirect()->route('organizations.index')->with('success', 'Invitation rejected.');
     }
 

@@ -8,10 +8,13 @@
                 <p>{{ $task->createUser->first_name }} asks you to take on this task.<br/>
                 <p>Title: {{ $task->title }}.</p><br/>
                 @if($task->description)
-                <p>Description: {{ $organization->description }}</p><br/>
+                <p>Description: {{ $task->description }}</p><br/>
                 @endif
                 @if($task->deadline)
                 <p>Deadline: {{ $task->deadline }}</p><br/>
+                @endif
+                @if($task->expiration_date)
+                <p>Expiration date: {{ $task->expiration_date }}</p><br/>
                 @endif
 
                 <p>Would you like to solve it?</p><br/>
