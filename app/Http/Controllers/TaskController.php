@@ -288,13 +288,14 @@ class TaskController extends Controller
         }
 
         if($data['expiration_date'] != $task->expiration_date) {
-            $changedFields .= 'Expiration date: ' . $task->expiration_date . '.';
+            $changedFields .= 'Expiration date: ' . $data['expiration_date'] . '.';
         }
 
         if($changedFields) {
+            $type = $task->parent_id ? 'The subtask ' : 'The task ';
             Log::create([
                 'task_id' => $task->id,
-                'message' => 'The task ' . $task->title . ' has been updated. ' . $changedFields,
+                'message' => $type . $task->title . ' has been updated. ' . $changedFields,
             ]);
         }
 

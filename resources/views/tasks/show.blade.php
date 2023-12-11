@@ -50,6 +50,7 @@
             </div>
         </div>
 
+        @if($task->logic_test === \App\Enums\LogicTestEnum::AllSubtasksMustBeCompleted->value)
         <div class="col-md-12">
             <div class="card card-accent-primary">
                 <div class="card-header">Subtasks</div>
@@ -100,6 +101,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <div class="col-md-12">
             <div class="card card-accent-primary">
