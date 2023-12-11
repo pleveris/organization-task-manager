@@ -28,8 +28,8 @@
                     @if($task->parent_id)
                     <p class="mb-0">Belongs to task: {{ $parentTask->title }}</p>
                     @endif
-                    <p class="mb-0">Created: {{ $task->created_at->format('M d, Y H:m') }}</p>
-                    <p class="mb-0">Updated: {{ $task->updated_at->format('M d, Y H:m') }}</p>
+                    <p class="mb-0">Created: {{ $task->created_at->format('M d, Y H:i') }}</p>
+                    <p class="mb-0">Updated: {{ $task->updated_at->format('M d, Y H:i') }}</p>
                 </div>
             </div>
         </div>
