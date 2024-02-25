@@ -21,5 +21,6 @@ class InvitationToTask extends Model
     protected $fillable = [
         'task_id',
         'code',
+        'user_id',
     ];
 }
