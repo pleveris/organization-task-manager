@@ -10,6 +10,7 @@ use App\Notifications\InvitationToTaskSent;
 use App\Models\Log;
 use App\Models\User;
 use App\Models\Task;
+use App\Models\TaskAssignee;
 use App\Models\Organization;
 use App\Models\InvitationToTask;
 use App\Services\TaskService;
@@ -20,11 +21,17 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\EditTaskRequest;
 use App\Http\Requests\CreateTaskRequest;
+use App\Http\Requests\InviteAssigneeRequest;
 use App\Mail\TaskAssigned as MailTaskAssigned;
 use App\Mail\InvitedToTask as MailInvitedToTask;
 
 class TaskController extends Controller
 {
+    public function __construct(
+        private readonly TaskService $taskService
+    ) {
+    }
+
     public function index()
     {
         $currentOrganizationId = currentUser()->current_organization_id;
@@ -73,16 +80,15 @@ class TaskController extends Controller
         //->filterAssigned(request('assigned'))
         ->paginate(10);
 
-        $statuses = new Collection();
+        $taskStatuses = new Collection();
+        $taskAssignees = new Collection();
 
         foreach($tasks as $task) {
-            $statuses->put(
-                $task->id,
-                resolve(TaskService::class)->getStatus($task)
-            );
+            $taskStatuses->put($task->id, $this->taskService->getStatus($task));
+            $taskAssignees->put($task->id, $this->taskService->getAssignees($task));
         }
 
-        return view('tasks.index', compact('tasks', 'statuses'));
+        return view('tasks.index', compact('tasks', 'taskStatuses', 'taskAssignees'));
     }
 
     public function create()
@@ -134,7 +140,7 @@ class TaskController extends Controller
         return view('tasks.create', compact('users', 'currentOrganizationId', 'parentId', 'headline'));
     }
 
-    public function createSubtask(Task $task)
+    public function addSubtask(Task $task)
     {
         $currentOrganizationId = currentUser()->current_organization_id;
         $organization = Organization::find($currentOrganizationId);
@@ -143,6 +149,26 @@ class TaskController extends Controller
         $headline = 'Add subtask to: ' . $task->title;
 
         return view('tasks.create', compact('users', 'currentOrganizationId', 'parentId', 'headline'));
+    }
+
+    public function addAssignee(Task $task)
+    {
+        $currentOrganizationId = currentUser()->current_organization_id;
+        $organization = Organization::find($currentOrganizationId);
+        $assignedUserIds = $task->assignees->pluck('id');
+        if($assignedUserIds->isEmpty()) {
+            $users = $organization->users->pluck('full_name', 'id');
+        } else {
+            $users = $organization->users->whereNotIn('id', $assignedUserIds)->pluck('full_name', 'id');
+        }
+
+        if($users->isEmpty()) {
+            return redirect()->route('tasks.show', $task)->with('error', 'This task is already assigned to all members of the organization!');
+        }
+
+        $headline = 'Add assignee to: ' . $task->title;
+
+        return view('tasks.add_assignee', compact('users', 'task', 'currentOrganizationId', 'headline'));
     }
 
     public function store(CreateTaskRequest $request)
@@ -168,7 +194,67 @@ class TaskController extends Controller
             'message' => $message,
         ]);
 
-        return redirect()->route('tasks.index')->with('success', 'Task created successfully');
+        return redirect()->route('tasks.index')->with('success', $message);
+    }
+
+    public function inviteAssignee(InviteAssigneeRequest $request)
+    {
+        $message = '';
+        $yourMessage = '';
+        $data = $request->validated();
+        //$assignment = TaskAssignee::create($data);
+        $assignee = User::find($data['user_id']);
+
+        if (! $assignee) {
+            return redirect()->back()->with('error', 'Cannot find such user!');
+        }
+
+        if ($assignee->id === currentUser()->id) {
+            $assignment = TaskAssignee::create($data);
+            //$assignee = User::find($data['user_id']);
+            $task = Task::find($data['task_id']);
+
+            $message = $task->parent_id ? 'Subtask assigned to ' . $assignee->getFullNameAttribute() . '.' : 'Task assigned to ' . $assignee->getFullNameAttribute() . '.';
+            $yourMessage = $task->parent_id ? 'Subtask assigned to you.' : 'Task assigned to you.';
+
+            Log::create([
+                'task_id' => $task->id,
+                'message' => $message,
+            ]);
+
+            return redirect()->back()->with('success', $yourMessage);
+        }
+
+        if($assignee->id !== currentUser()->id) {
+            $task = Task::find($data['task_id']);
+            if($task->invitations->count() >= 5) {
+                return redirect()->route('tasks.show', $task)->with('error', 'Too many pending invitations to this task!');
+            }
+
+            if(InvitationToTask::where('task_id', $task->id)
+            ->where('user_id', $assignee->id)
+->exists()) {
+                return redirect()->route('tasks.show', $task)->with('error', 'Invitation to this user is already sent!');
+            }
+
+            $code = md5(uniqid(rand(), true));
+            $invitation = InvitationToTask::create([
+                'task_id' => $task->id,
+                'code'    => $code,
+                'user_id' => $assignee->id,
+            ]);
+
+            Mail::to($assignee)->send(new MailInvitedToTask($task, $invitation));
+
+            $message = $task->parent_id ? 'Invitation to subtask sent to ' . $assignee->getFullNameAttribute() : 'Invitation to task sent to ' . $assignee->getFullNameAttribute();
+
+            Log::create([
+                'task_id' => $task->id,
+                'message' => $message,
+            ]);
+        }
+
+        return redirect()->route('tasks.show', $task)->with('success', $message);
     }
 
     public function show(Task $task)
@@ -179,10 +265,10 @@ class TaskController extends Controller
         }
 
         $task->load('user');
-
         $task->load('subtasks');
+        $task->load('assignees');
 
-        $status = resolve(TaskService::class)->getStatus($task);
+        $status = $this->taskService->getStatus($task);
 
         $parentTask = null;
 
@@ -209,6 +295,7 @@ class TaskController extends Controller
         $organizationId = $task->organization_id;
         $organization = Organization::findOrFail($organizationId);
         $users = $organization->users->pluck('full_name', 'id');
+        $assignedUserIds = $task->assignees->pluck('user_id');
 
         //if (! $task->parent_id) {
         //$task->load('subtasks');
@@ -224,38 +311,54 @@ class TaskController extends Controller
 
         $logicTests = LogicTestEnum::cases();
 
-        return view('tasks.edit', compact('task', 'users', 'organizationId', 'headline', 'allTasks', 'logicTests'));
+        return view('tasks.edit', compact('task', 'users', 'assignedUserIds', 'organizationId', 'headline', 'allTasks', 'logicTests'));
     }
 
     public function update(EditTaskRequest $request, Task $task)
     {
-        if(! $task->create_user_id === currentUser()->id
-        || ! $task->user_id === currentUser()->id) {
-            return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
-        }
+        //if(! $task->create_user_id === currentUser()->id
+        //|| ! $task->assignees->contains(currentUser()->id)) {
+        //return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
+        //}
 
-        if ($task->user_id !== $request->user_id) {
-            if($task->invitations->count() >= 5) {
-                return redirect()->route('tasks.index')->with('error', 'Too many pending invitations to this task.');
+        //$assignedUserIds = $task->assignees->pluck('user_id');
+
+        //$userIdsToBeAssigned = $request->input('assignees');
+
+        /*foreach($userIdsToBeAssigned as $newId) {
+            $newId = (int)$newId;
+        if (! $task->assignees->contains($newId)) {
+            if() {
+                TaskAssignee::create([
+                    'task_id' => $task->id,
+                    'user_id'         => currentUser()->id,
+                ]);
+                    }
+
+            $newAssignee = User::find($newId);
+
+            if (! $newAssignee) {
+                return redirect()->route('tasks.index')->with('error', 'Cannot find such user!');
             }
 
-            $assignee = User::find($request->user_id) ?: currentUser(); //workaround
-            $code = md5(uniqid(rand(), true));
-            $invitation = InvitationToTask::create([
-                'task_id' => $task->id,
-                'code'    => $code,
-            ]);
+            if($newAssignee->id !== currentUser()->id) {
+                if($task->invitations->count() >= 5) {
+                    return redirect()->route('tasks.index')->with('error', 'Too many pending invitations to this task.');
+                }
 
-            $assignee = $request->user_id ? User::find($request->user_id) : currentUser(); //workaround
+                $code = md5(uniqid(rand(), true));
+                $invitation = InvitationToTask::create([
+                    'task_id' => $task->id,
+                    'code'    => $code,
+                ]);
 
-            if($assignee->id !== currentUser()->id) {
-                //$user->notify(new TaskAssigned($task));
+                  //$user->notify(new TaskAssigned($task));
                 //$assignee->notify(new InvitationToTaskSent(['title' => $message]));
-                Mail::to($assignee)->send(new MailInvitedToTask($task, $invitation));
+                dd('works');Mail::to($newAssignee)->send(new MailInvitedToTask($task, $invitation));
 
                 Log::create([
                     'task_id' => $task->id,
-                    'message' => 'Invitation to task sent to ' . $assignee->getFullNameAttribute(),
+                    'message' => 'Invitation to task sent to ' . $newAssignee->getFullNameAttribute(),
                 ]);
             }
 
@@ -263,9 +366,10 @@ class TaskController extends Controller
 
             //Mail::to($user)->send(new MailTaskAssigned($task));
         }
+    }*/
 
         $data = $request->validated();
-        $data['user_id'] = null;
+        //$data['user_id'] = null;
         //$data['hidden'] = 0;
         //$data['logic'] = 0;
 
@@ -283,13 +387,28 @@ class TaskController extends Controller
             $changedFields .= 'Description: ' . $data['description'] . '.';
         }
 
-        if($data['user_id'] != $task->user_id) {
-            $changedFields .= 'Assignee: ' . User::find($data['user_id'])->getFullNameAttribute() . '.';
-        }
+        //if($data['user_id'] != $task->user_id) {
+        //$changedFields .= 'Assignee: ' . User::find($data['user_id'])->getFullNameAttribute() . '.';
+        //}
 
         if($data['expiration_date'] != $task->expiration_date) {
             $changedFields .= 'Expiration date: ' . $data['expiration_date'] . '.';
         }
+
+        $task->update($data);
+
+        /*foreach($userIdsToBeAssigned as $assigneeId) {
+            if(TaskAssignee::where('user_id', $assigneeId)
+            ->where('task_id', $task->id)
+            ->exists()) {
+                continue;
+            }
+
+            TaskAssignee::create([
+                'task_id' => $task->id,
+                'user_id'         => $assigneeId,
+            ]);
+            }*/
 
         if($changedFields) {
             $type = $task->parent_id ? 'The subtask ' : 'The task ';
@@ -298,8 +417,6 @@ class TaskController extends Controller
                 'message' => $type . $task->title . ' has been updated. ' . $changedFields,
             ]);
         }
-
-        $task->update($data);
 
         /*if($task->logic === 1 && $task->subtasks->isEmpty()) {
             $task->update(['hidden' => 1]);
@@ -314,18 +431,32 @@ class TaskController extends Controller
         //abort_if(Gate::denies('delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         if(! $task->create_user_id === currentUser()->id
-        || ! $task->user_id === currentUser()->id) {
+        || ! $task->assignees->contains(currentUser()->id)) {
             return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
         }
 
-        //$message = '';
+        $message = '';
 
         try {
             foreach($task->subtasks as $subtask) {
-                //$message .= 'Deleted subtask: ' . $subtask->title . '. ';
+                foreach($subtask->assignees as $assignee) {
+                    $name = $assignee->getFullNameAttribute();
+                    $message .= 'Removed $name as assignee from this subtask. ';
+                    TaskAssignee::where('user_id', $assignee->id)->delete();
+                }
+                $message .= 'Deleted subtask: ' . $subtask->title . '. ';
                 $subtask->delete();
             }
-            //$message .= 'Deleted task: ' . $task->title . '. ';
+            //foreach($task->subtasks as $subtask) {
+            //$message .= 'Deleted subtask: ' . $subtask->title . '. ';
+            //$subtask->delete();
+            //}
+
+            //foreach($task->assignees as $assignee) {
+            //$message .= 'Removed <username> as assignee from this task. ';
+            //}
+
+            $message .= 'Deleted task: ' . $task->title . '. ';
             $task->delete();
 
         } catch (\Illuminate\Database\QueryException $e) {
@@ -335,6 +466,29 @@ class TaskController extends Controller
         }
 
         return redirect()->route('tasks.index');
+    }
+
+    public function removeAssignee(Task $task, User $user)
+    {
+        if (! TaskAssignee::where('task_id', $task->id)
+        ->where('user_id', $user->id)
+    ->exists()) {
+            return redirect()->back()->with('error', 'This user is not an assignee of this task.');
+        }
+
+        $message = '';
+
+        try {
+            TaskAssignee::where('task_id', $task->id)
+            ->where('user_id', $user->id)
+            ->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            if($e->getCode() === '23000') {
+                return redirect()->back()->with('status', 'Error while removing an assignee.');
+            }
+        }
+
+        return redirect()->back();
     }
 
     public function inviteUser(Task $task)
@@ -377,9 +531,14 @@ class TaskController extends Controller
             return redirect()->route('tasks.index')->with('error', 'Sorry, you already have this task in your list!');
         }
 
-        $task->update([
+        TaskAssignee::create([
+            'task_id' => $task->id,
             'user_id' => currentUser()->id,
         ]);
+
+        //$task->update([
+        //'user_id' => currentUser()->id,
+        //]);
 
         $notifyUser = User::find($invitation->create_user_id);
         $message = currentUser()->getFullNameAttribute() . ' has accepted the invitation to the task ' . $task->title . '.';
@@ -446,6 +605,8 @@ class TaskController extends Controller
             return redirect()->route('tasks.index')->with('error', 'Sorry, you are a creator of the task, you cannot invite yourself!');
         }
 
-        return view('tasks.handle_invitation', compact('code', 'task'));
+        $invitationCreator = $invitation->createUser;
+
+        return view('tasks.handle_invitation', compact('code', 'task', 'invitationCreator'));
     }
 }

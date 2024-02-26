@@ -67,7 +67,7 @@
                             <span class="help-block"> </span>
                         </div> --> --}}
 
-                        <div class="form-group">
+                        {{-- <!-- <div class="form-group">
                             <label for="user_id">Assigned user</label>
                             <select class="form-control {{ $errors->has('user_id') ? 'is-invalid' : '' }}"
                                     name="user_id" id="user_id">
@@ -84,7 +84,7 @@
                                 </div>
                             @endif
                             <span class="help-block"> </span>
-                        </div>
+                        </div> --> --}}
 
                         {{-- <!-- <div class="form-group">
                             <label for="organization_id">Assigned organization</label>

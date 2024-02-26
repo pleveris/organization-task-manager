@@ -5,7 +5,7 @@
             <div class="card-header">Invitation</div>
 
             <div class="card-body">
-                <p>{{ $task->createUser->first_name }} asks you to take on this task.<br/>
+                <p>{{ $invitationCreator->first_name }} asks you to take on this task.<br/>
                 <p>Title: {{ $task->title }}.</p><br/>
                 @if($task->description)
                 <p>Description: {{ $task->description }}</p><br/>

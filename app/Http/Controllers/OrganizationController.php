@@ -18,22 +18,27 @@ use App\Http\Requests\CreateOrganizationRequest;
 
 class OrganizationController extends Controller
 {
+    public function __construct(
+        private readonly TaskService $taskService
+    ) {
+    }
+
     public function index()
     {
         $organization = Organization::find(request('current'));
-        if($organization) {
+        if ($organization) {
             currentUser()->update([
                 'current_organization_id' => $organization->id,
-                ]);
+            ]);
 
             return redirect()->back();
         }
 
         $currentOrganizationId = currentUser()->current_organization_id;
         $organizations = User::where('id', currentUser()->id)
-        ->firstOrFail()
-        ->organizations()
-        ->paginate(10);
+            ->firstOrFail()
+            ->organizations()
+            ->paginate(10);
 
         /*$createdIds = Organization::where('create_user_id', currentUser()->id)
         *->get()
@@ -80,27 +85,26 @@ class OrganizationController extends Controller
 
     public function show(Organization $organization)
     {
-        if(! $organization->accessibleToUser(currentUser()->id)) {
+        if (! $organization->accessibleToUser(currentUser()->id)) {
             return redirect()->route('organizations.index')->with('error', 'You are not a member of this organization.');
         }
 
         $organization->load('tasks');
 
         $taskStatuses = new Collection();
+        $taskAssignees = new Collection();
 
-        foreach($organization->tasks as $task) {
-            $taskStatuses->put(
-                $task->id,
-                resolve(TaskService::class)->getStatus($task)
-            );
+        foreach ($organization->tasks as $task) {
+            $taskStatuses->put($task->id, $this->taskService->getStatus($task));
+            $taskAssignees->put($task->id, $this->taskService->getAssignees($task));
         }
 
-        return view('organizations.show', compact('organization', 'taskStatuses'));
+        return view('organizations.show', compact('organization', 'taskStatuses', 'taskAssignees'));
     }
 
     public function edit(Organization $organization)
     {
-        if(! $organization->accessibleToUser(currentUser()->id)) {
+        if (! $organization->accessibleToUser(currentUser()->id)) {
             return redirect()->route('organizations.index')->with('error', 'You are not a member of this organization.');
         }
 
@@ -109,7 +113,7 @@ class OrganizationController extends Controller
 
     public function update(EditOrganizationRequest $request, Organization $organization)
     {
-        if(! $organization->accessibleToUser(currentUser()->id)) {
+        if (! $organization->accessibleToUser(currentUser()->id)) {
             return redirect()->route('organizations.index')->with('error', 'You are not a member of this organization.');
         }
 
@@ -122,18 +126,18 @@ class OrganizationController extends Controller
     {
         //abort_if(Gate::denies('delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        if(! $organization->accessibleToUser(currentUser()->id)) {
+        if (! $organization->accessibleToUser(currentUser()->id)) {
             return redirect()->route('organizations.index')->with('error', 'You are not a member of this organization.');
         }
 
-        if($organization->id === currentUser()->current_organization_id) {
+        if ($organization->id === currentUser()->current_organization_id) {
             return redirect()->route('organizations.index')->with('error', 'You cannot delete your current organization!');
         }
 
         try {
             $organization->delete();
         } catch (\Illuminate\Database\QueryException $e) {
-            if($e->getCode() === '23000') {
+            if ($e->getCode() === '23000') {
                 return redirect()->back()->with('status', 'organization belongs to task. Cannot delete.');
             }
         }
@@ -143,11 +147,11 @@ class OrganizationController extends Controller
 
     public function leave(Organization $organization)
     {
-        if(! $organization->accessibleToUser(currentUser()->id)) {
+        if (! $organization->accessibleToUser(currentUser()->id)) {
             return redirect()->route('organizations.index')->with('error', 'You are not a member of this organization!');
         }
 
-        if($organization->id === currentUser()->current_organization_id) {
+        if ($organization->id === currentUser()->current_organization_id) {
             return redirect()->route('organizations.index')->with('error', 'You cannot leave your current organization!');
         }
 
@@ -155,8 +159,8 @@ class OrganizationController extends Controller
             'organization_id' => null,
         ]);*/
         OrganizationUser::where('user_id', currentUser()->id)
-        ->where('organization_id', $organization->id)
-        ->delete();
+            ->where('organization_id', $organization->id)
+            ->delete();
 
         $notifyUser = User::find($organization->create_user_id);
         $message = currentUser()->getFullNameAttribute() . ' has left ' . $organization->title . ' organization.';
@@ -182,26 +186,27 @@ class OrganizationController extends Controller
     {
         $invitation = InvitationToOrganization::where('code', $code)->first();
 
-        if(! $invitation) {
+        if (! $invitation) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, invitation does not exist!');
         }
 
         $organization = Organization::find($invitation->organization_id);
 
-        if(! $organization) {
+        if (! $organization) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, organization does not exist!');
         }
 
-        if($organization->create_user_id === currentUser()->id) {
+        if ($organization->create_user_id === currentUser()->id) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, you are a creator of organization, you cannot invite yourself!');
         }
 
         //if(currentUser()->organization_id === $organization->id) {
         //return redirect()->route('organizations.index')->with('error', 'Sorry, you are already a member of this organization!');
         //}
-        if(OrganizationUser::where('user_id', currentUser()->id)
-        ->where('organization_id', $organization->id)
-        ->exists()) {
+        if (OrganizationUser::where('user_id', currentUser()->id)
+            ->where('organization_id', $organization->id)
+            ->exists()
+        ) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, you are already a member of this organization!');
         }
 
@@ -224,26 +229,27 @@ class OrganizationController extends Controller
     {
         $invitation = InvitationToOrganization::where('code', $code)->first();
 
-        if(! $invitation) {
+        if (! $invitation) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, invitation does not exist!');
         }
 
         $organization = Organization::find($invitation->organization_id);
 
-        if(! $organization) {
+        if (! $organization) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, organization does not exist!');
         }
 
-        if($organization->create_user_id === currentUser()->id) {
+        if ($organization->create_user_id === currentUser()->id) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, you are a creator of organization, you cannot reject this invitation!');
         }
 
         //if(currentUser()->organization_id === $organization->id) {
         //return redirect()->route('organizations.index')->with('error', 'Sorry, you are already a member of this organization!');
         //}
-        if(OrganizationUser::where('user_id', currentUser()->id)
-        ->where('organization_id', $organization->id)
-        ->exists()) {
+        if (OrganizationUser::where('user_id', currentUser()->id)
+            ->where('organization_id', $organization->id)
+            ->exists()
+        ) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, you are already a member of this organization!');
         }
 
@@ -259,21 +265,23 @@ class OrganizationController extends Controller
     {
         $invitation = InvitationToOrganization::where('code', $code)->first();
 
-        if(! $invitation) {
+        if (! $invitation) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, invitation does not exist!');
         }
 
         $organization = Organization::find($invitation->organization_id);
 
-        if(! $organization) {
+        if (! $organization) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, organization does not exist!');
         }
 
-        if($organization->create_user_id === currentUser()->id) {
+        if ($organization->create_user_id === currentUser()->id) {
             return redirect()->route('organizations.index')->with('error', 'Sorry, you are a creator of organization, you cannot invite yourself!');
         }
 
-        return view('organizations.handle_invitation', compact('code', 'organization'));
+        $invitationCreator = $invitation->createUser;
+
+        return view('organizations.handle_invitation', compact('code', 'organization', 'invitationCreator'));
     }
 
     public function removeUser(Organization $organization, User $user)
@@ -282,8 +290,8 @@ class OrganizationController extends Controller
             'organization_id' => null,
         ]);*/
         OrganizationUser::where('user_id', $user->id)
-        ->where('organization_id', $organization->id)
-        ->delete();
+            ->where('organization_id', $organization->id)
+            ->delete();
 
         return redirect()->route('organizations.show', $organization)->with('success', 'User successfullly removed.');
     }

@@ -2,8 +2,26 @@
 
 @section('content')
 
+@if (session('status'))
+                <div class="alert alert-danger" role="alert">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="alert alert-danger" role="alert">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if (session('success'))
+                <div class="alert alert-success" role="alert">
+                    {{ session('success') }}
+                </div>
+            @endif
+
     <div class="row">
-        @if($task->user)
+        {{-- <!-- @if($task->user)
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">Assigned user</div>
@@ -14,7 +32,7 @@
                 </div>
             </div>
         </div>
-        @endif
+        @endif --> --}}
 
         <div class="col-md-8">
             <div class="card card-accent-primary">
@@ -132,6 +150,51 @@
                             No logs for this task are available.
                         </div>
                     @endif
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="card card-accent-primary">
+                <div class="card-header">Assignees</div>
+
+                <div class="card-body">
+                    @if($task->assignees->count())
+                        <table class="table table-sm table-responsive-sm">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($task->assignees as $assignee)
+                                    <tr>
+                                        <td> {{ $assignee->getFullNameAttribute() }}</td>
+                                        <td>{{ $assignee->email }}</td>
+                                        <td>
+                                            <form action="{{ route('tasks.removeAssignee', [$task, $assignee]) }}" method="POST"
+                                                      onsubmit="return confirm('Are you sure?');"
+                                                      style="display: inline-block;">
+                                                    <input type="hidden" name="_method" value="DELETE">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                    <input type="submit" class="btn btn-sm btn-danger" value="Remove">
+                                                </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <div class="alert alert-info" role="alert">
+                            This task has no assignees.
+                        </div>
+                    @endif
+
+                    <div class="alert alert-info" role="alert">
+                            <a href="{{ route('tasks.addAssignee', $task) }}">Add assignee</a>
+                        </div>
 
                 </div>
             </div>

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Log;
 use App\Traits\Filter;
 use App\Traits\HasUserFields;
 //use Spatie\MediaLibrary\HasMedia;
@@ -66,5 +65,10 @@ class Task extends Model
     public function invitations()
     {
         return $this->hasMany(InvitationToTask::class, 'task_id');
+    }
+
+    public function assignees()
+    {
+        return $this->belongsToMany(User::class, 'tasks_assignees');
     }
 }

@@ -5,7 +5,7 @@
             <div class="card-header">Invitation</div>
 
             <div class="card-body">
-                <p>{{ $organization->createUser->first_name }} asks you to join the organization named {{ $organization->title }}.</p><br/>
+                <p>{{ $invitationCreator->first_name }} asks you to join the organization named {{ $organization->title }}.</p><br/>
                 <p>Description: {{ $organization->description }}</p><br/>
                 <p>Do you wish to get in?</p><br/>
                 <a class="btn btn-link" href="{{ route('organizations.acceptInvitation', $code) }}">

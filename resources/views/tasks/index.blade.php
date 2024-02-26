@@ -77,8 +77,8 @@
                         @else
                         <td><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></td>
                         @endif
-                        <td>{{ $task?->user?->first_name }}</td>
-                        <td>{{ $statuses->get($task->id) }}</td>
+                        <td>{{ $taskAssignees->get($task->id) }}</td>
+                        <td>{{ $taskStatuses->get($task->id) }}</td>
                         <td>
                             @if($task->hidden)
                             <a class="btn btn-sm btn-info" href="{{ route('tasks.addSubtask', $task) }}">

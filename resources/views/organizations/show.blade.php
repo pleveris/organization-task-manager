@@ -58,7 +58,7 @@
                                 @foreach($organization->tasks as $task)
                                     <tr>
                                         <td><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></td>
-                                        <td>{{ $task?->user?->first_name }}</td>
+                                        <td>{{ $taskAssignees?->get($task->id) }}</td>
                                         <td>{{ $task?->deadline }}</td>
                                         <td>{{ $taskStatuses->get($task->id) }}</td>
                                         <td>
