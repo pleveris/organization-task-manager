@@ -45,6 +45,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tasks/reject-invitation/{code}', [\App\Http\Controllers\TaskController::class, 'rejectInvitation'])->name('tasks.rejectInvitation');
     Route::get('/tasks/add-subtask/{task}', [\App\Http\Controllers\TaskController::class, 'addSubtask'])->name('tasks.addSubtask');
     Route::get('/tasks/add-assignee/{task}', [\App\Http\Controllers\TaskController::class, 'addAssignee'])->name('tasks.addAssignee');
+    Route::put('/tasks/complete/{task}', [\App\Http\Controllers\TaskController::class, 'complete'])->name('tasks.complete');
+    Route::put('/tasks/archive/{task}', [\App\Http\Controllers\TaskController::class, 'archive'])->name('tasks.archive');
     Route::post('/tasks/invite-assignee', [\App\Http\Controllers\TaskController::class, 'inviteAssignee'])->name('tasks.inviteAssignee');
     Route::delete('/tasks/remove-assignee/{task}/{user}', [\App\Http\Controllers\TaskController::class, 'removeAssignee'])->name('tasks.removeAssignee');
 

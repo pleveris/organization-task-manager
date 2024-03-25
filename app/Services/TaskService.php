@@ -10,6 +10,10 @@ class TaskService
 {
     public function getStatus(Task $task): string
     {
+        if($task->completed_at) {
+            return 'Completed';
+        }
+
         if (! $task->logic_test) {
             return 'Unsetup';
         }

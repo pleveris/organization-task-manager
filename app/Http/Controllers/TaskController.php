@@ -14,6 +14,7 @@ use App\Models\TaskAssignee;
 use App\Models\Organization;
 use App\Models\InvitationToTask;
 use App\Services\TaskService;
+use App\Traits\Filter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
@@ -27,6 +28,7 @@ use App\Mail\InvitedToTask as MailInvitedToTask;
 
 class TaskController extends Controller
 {
+    use Filter;
     public function __construct(
         private readonly TaskService $taskService
     ) {
@@ -68,6 +70,7 @@ class TaskController extends Controller
         *}*/
 
         $tasks = Task::with(['user', 'organization'])
+        //->whereNull('completed_at')
         ->where('organization_id', $currentOrganizationId)
         ->whereNull('parent_id')
         //->when($createdIds, function ($query) use ($createdIds) {
@@ -78,6 +81,7 @@ class TaskController extends Controller
         //})
         //->filterStatus(request('status'))
         //->filterAssigned(request('assigned'))
+        ->filterStatus(request('status'))
         ->paginate(10);
 
         $taskStatuses = new Collection();
@@ -463,6 +467,70 @@ class TaskController extends Controller
             if($e->getCode() === '23000') {
                 return redirect()->back()->with('status', 'Task belongs to organization. Cannot delete.');
             }
+        }
+
+        return redirect()->route('tasks.index');
+    }
+
+    public function archive(Task $task)
+    {
+        //abort_if(Gate::denies('delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        if(! $task->create_user_id === currentUser()->id
+        && ! $task->assignees->contains(currentUser()->id)) {
+            return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
+        }
+
+        $message = '';
+
+        try {
+            foreach($task->subtasks as $subtask) {
+                /*foreach($subtask->assignees as $assignee) {
+                    $name = $assignee->getFullNameAttribute();
+                    $message .= 'Removed $name as assignee from this subtask. ';
+                    TaskAssignee::where('user_id', $assignee->id)->delete();
+                }*/
+                $message .= 'Archived subtask: ' . $subtask->title . '. ';
+                $subtask->archived = true;
+            }
+
+            $message .= 'Archived task: ' . $task->title . '. ';
+            $task->archived = true;
+            $task->save();
+
+        } catch (\Illuminate\Database\QueryException $e) {
+        }
+
+        return redirect()->route('tasks.index');
+    }
+
+    public function complete(Task $task)
+    {
+        //abort_if(Gate::denies('delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        if(! $task->create_user_id === currentUser()->id
+        || ! $task->assignees->contains(currentUser()->id)) {
+            return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
+        }
+
+        $message = '';
+
+        try {
+            foreach($task->subtasks as $subtask) {
+                /*foreach($subtask->assignees as $assignee) {
+                    $name = $assignee->getFullNameAttribute();
+                    $message .= 'Removed $name as assignee from this subtask. ';
+                    TaskAssignee::where('user_id', $assignee->id)->delete();
+                }*/
+                $message .= 'Completed subtask: ' . $subtask->title . '. ';
+                $subtask->completed_at = now();
+            }
+
+            $message .= 'Completed task: ' . $task->title . '. ';
+            $task->completed_at = now();
+            $task->save();
+
+        } catch (\Illuminate\Database\QueryException $e) {
         }
 
         return redirect()->route('tasks.index');

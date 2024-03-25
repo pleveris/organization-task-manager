@@ -31,34 +31,20 @@
                 </div>
             @endif
 
-            {{-- <!-- <div class="d-flex justify-content-end">
+            <div class="d-flex justify-content-end">
                 <form action="{{ route('tasks.index') }}" method="GET">
                     <div class="form-group row">
                         <label for="status" class="col-form-label">Status:</label>
                         <div class="col-sm-8">
                             <select class="form-control" name="status" id="status" onchange="this.form.submit()">
-                                <option value="all" {{ request('filter') == 'all' ? 'selected' : '' }}>All</option>
-                                @foreach(App\Models\Task::STATUS as $status)
-                                    <option
-                                        value="{{ $status }}" {{ request('status') == $status ? 'selected' : '' }}>{{ ucfirst($status) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-                    {{-- <!-- <div class="form-group row">
-                        <label for="assigned" class="col-form-label">Assigned to:</label>
-                        <div class="col-sm-8">
-                            <select class="form-control" name="assigned" id="assigned" onchange="this.form.submit()">
-                                <option value="0" {{ request('assigned') == '-' ? 'selected' : '' }}>-</option>
-                                    <option
-                                        value="{{ auth()->user()->id }}" {{ request('assigned') == auth()->user()->id ? 'selected' : '' }}>Only to me</option>
+                                <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All</option>
+                                <option value="archived" {{ request('status') == 'archived' ? 'selected' : '' }}>Archived</option>
                             </select>
                         </div>
                     </div>
 
                 </form>
-            </div> --> --}}
+            </div>
 
             <table class="table table-responsive-sm table-striped">
                 <thead>
@@ -88,12 +74,28 @@
                             <a class="btn btn-sm btn-info" href="{{ route('tasks.edit', $task) }}">
                                 Edit
                     </a>
-                    @if($task->createdByLoggedInUser())
+                    @if(! $task->completed_at)
+                    <form action="{{ route('tasks.complete', $task) }}" method="POST" onsubmit="return confirm('Are you sure you want to complete this task?');" style="display: inline-block;">
+                                <input type="hidden" name="_method" value="PUT">
+                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                <input type="submit" class="btn btn-sm btn-danger" value="Complete">
+                            </form>
+@endif
+                    {{-- <!-- @if($task->createdByLoggedInUser())
                             <form action="{{ route('tasks.destroy', $task) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this task with all of its subtasks? This action cannot be undone! ?');" style="display: inline-block;">
                                 <input type="hidden" name="_method" value="DELETE">
                                 <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                 <input type="submit" class="btn btn-sm btn-danger" value="Delete">
                             </form>
+                            @endif --> --}}
+                            @if($task->createdByLoggedInUser())
+                            @if(! $task->archived)
+                            <form action="{{ route('tasks.archive', $task) }}" method="POST" onsubmit="return confirm('Are you sure you want to archive this task?');" style="display: inline-block;">
+                                <input type="hidden" name="_method" value="PUT">
+                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                <input type="submit" class="btn btn-sm btn-danger" value="Archive">
+                            </form>
+                            @endif
                             @endif
                             @endif
                         </td>

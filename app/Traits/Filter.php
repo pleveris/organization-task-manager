@@ -6,8 +6,8 @@ trait Filter
 {
     public function scopeFilterStatus($query, $filter)
     {
-        if (in_array($filter, self::STATUS)) {
-            return $query->where('status', $filter);
+        if ($filter === 'archived') {
+            return $query->where('archived', true);
         }
 
         return $query;

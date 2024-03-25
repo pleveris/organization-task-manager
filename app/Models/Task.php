@@ -29,7 +29,9 @@ class Task extends Model
         'logic_test',
         'logic',
         'hidden',
-        'expiration_date'
+        'expiration_date',
+        'archived',
+        'completed_at'
     ];
 
     public function user()
