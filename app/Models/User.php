@@ -32,6 +32,7 @@ class User extends Authenticatable
         'address',
         'phone_number',
         'current_organization_id',
+        'task_filter',
     ];
 
     /**

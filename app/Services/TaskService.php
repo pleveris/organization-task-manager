@@ -10,7 +10,8 @@ class TaskService
 {
     public function getStatus(Task $task): string
     {
-        if($task->completed_at) {
+        if($task->archived) return 'archived';
+        if($task->logic_test === LogicTestEnum::Complete->value && $task->completed_at) {
             return 'Completed';
         }
 

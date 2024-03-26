@@ -37,7 +37,7 @@
                         <label for="status" class="col-form-label">Status:</label>
                         <div class="col-sm-8">
                             <select class="form-control" name="status" id="status" onchange="this.form.submit()">
-                                <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All</option>
+                                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
                                 <option value="archived" {{ request('status') == 'archived' ? 'selected' : '' }}>Archived</option>
                             </select>
                         </div>
@@ -74,13 +74,6 @@
                             <a class="btn btn-sm btn-info" href="{{ route('tasks.edit', $task) }}">
                                 Edit
                     </a>
-                    @if(! $task->completed_at)
-                    <form action="{{ route('tasks.complete', $task) }}" method="POST" onsubmit="return confirm('Are you sure you want to complete this task?');" style="display: inline-block;">
-                                <input type="hidden" name="_method" value="PUT">
-                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                <input type="submit" class="btn btn-sm btn-danger" value="Complete">
-                            </form>
-@endif
                     {{-- <!-- @if($task->createdByLoggedInUser())
                             <form action="{{ route('tasks.destroy', $task) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this task with all of its subtasks? This action cannot be undone! ?');" style="display: inline-block;">
                                 <input type="hidden" name="_method" value="DELETE">

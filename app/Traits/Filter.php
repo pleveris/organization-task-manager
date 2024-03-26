@@ -4,10 +4,14 @@ namespace App\Traits;
 
 trait Filter
 {
-    public function scopeFilterStatus($query, $filter)
+    public function scopeFilterStatus($query)
     {
+        $filter = currentUser()->task_filter;
+
         if ($filter === 'archived') {
             return $query->where('archived', true);
+        } else if($filter === 'active') {
+            return $query->where('archived', false);
         }
 
         return $query;

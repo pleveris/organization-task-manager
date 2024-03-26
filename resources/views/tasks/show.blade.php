@@ -195,6 +195,13 @@
                     <div class="alert alert-info" role="alert">
                             <a href="{{ route('tasks.addAssignee', $task) }}">Add assignee</a>
                         </div>
+                        @if($task->logic_test === \App\Enums\LogicTestEnum::Complete->value && ! $task->completed_at)
+                        <form action="{{ route('tasks.complete', $task) }}" method="POST" onsubmit="return confirm('Are you sure you want to complete this task?');" style="display: inline-block;">
+                                <input type="hidden" name="_method" value="PUT">
+                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                <input type="submit" class="btn btn-sm btn-danger" value="Complete">
+                            </form>
+                        @endif
 
                 </div>
             </div>

@@ -69,6 +69,10 @@ class TaskController extends Controller
             *return view('tasks.index', compact('tasks'));
         *}*/
 
+        if(request('status')) {
+            currentUser()->update(['task_filter' => request('status')]);
+        }
+
         $tasks = Task::with(['user', 'organization'])
         //->whereNull('completed_at')
         ->where('organization_id', $currentOrganizationId)
@@ -79,9 +83,8 @@ class TaskController extends Controller
         //->when($memberIds, function ($query) use ($memberIds) {
             //$query->whereIn('user_id', $memberIds);
         //})
-        //->filterStatus(request('status'))
         //->filterAssigned(request('assigned'))
-        ->filterStatus(request('status'))
+        ->filterStatus()
         ->paginate(10);
 
         $taskStatuses = new Collection();
@@ -264,7 +267,7 @@ class TaskController extends Controller
     public function show(Task $task)
     {
         if(! $task->create_user_id === currentUser()->id
-        || ! $task->user_id === currentUser()->id) {
+        && ! $task->user_id === currentUser()->id) {
             return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
         }
 
@@ -288,7 +291,7 @@ class TaskController extends Controller
     public function edit(Task $task)
     {
         if(! $task->create_user_id === currentUser()->id
-        || ! $task->user_id === currentUser()->id) {
+        && ! $task->user_id === currentUser()->id) {
             return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
         }
 
@@ -321,7 +324,7 @@ class TaskController extends Controller
     public function update(EditTaskRequest $request, Task $task)
     {
         //if(! $task->create_user_id === currentUser()->id
-        //|| ! $task->assignees->contains(currentUser()->id)) {
+        //&& ! $task->assignees->contains(currentUser()->id)) {
         //return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
         //}
 
@@ -435,7 +438,7 @@ class TaskController extends Controller
         //abort_if(Gate::denies('delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         if(! $task->create_user_id === currentUser()->id
-        || ! $task->assignees->contains(currentUser()->id)) {
+        && ! $task->assignees->contains(currentUser()->id)) {
             return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
         }
 
@@ -509,7 +512,7 @@ class TaskController extends Controller
         //abort_if(Gate::denies('delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         if(! $task->create_user_id === currentUser()->id
-        || ! $task->assignees->contains(currentUser()->id)) {
+        && ! $task->assignees->contains(currentUser()->id)) {
             return redirect()->route('tasks.index')->with('error', 'You cannot view this task.');
         }
 
